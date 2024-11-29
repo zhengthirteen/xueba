@@ -26,7 +26,7 @@ export default {
 
 <style scoped>
 .sidebar {
-  width: 200px;
+  width: 12vw;
   background: #333;
   color: white;
   position: fixed;
@@ -41,12 +41,12 @@ export default {
   margin: 0;
 }
 .sidebar li {
-  padding: 50px;
+  padding: 40px;
 }
 .sidebar a {
   color: white;
   text-decoration: none;
-	font-size: 20px;
+  font-size: 20px;
 }
 .sidebar a:hover {
   text-decoration: underline;
