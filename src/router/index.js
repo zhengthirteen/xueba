@@ -9,6 +9,7 @@ import CommentSection from "../components/CommentSection.vue";
 import Login from "../components/Login.vue";
 import Register from "../components/Register.vue";
 import Home from "../components/Home.vue";
+import Contacts from "../components/Contacts.vue";
 
 
 const routes = [
@@ -29,6 +30,7 @@ const routes = [
 	{ path: "/comments", name: "CommentSection", component: CommentSection },
 	{ path: "/login", name: "Login", component: Login },
 	{ path: "/register", name: "Register", component: Register },
+	{ path: "/contacts", name: "Contacts", component: Contacts },
 ];
 
 const router = createRouter({

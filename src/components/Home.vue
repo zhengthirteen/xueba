@@ -1,10 +1,11 @@
 <template>
 	<div class="home">
 		<div class="main-content">
-			<div class="top-bar" :class="{ hidden: isHidden }" ref="topBar">
+			<!-- <div class="top-bar" :class="{ hidden: isHidden }" ref="topBar">
 				<input type="text" placeholder="搜索..." class="search-bar" />
 				<button class="search-button">搜索</button>
-			</div>
+			</div> -->
+			<SearchBar :onSearch="handleSearch" />
 			<div class="content">
 				<PopularTopics />
 				<PopularChannels />
@@ -20,50 +21,36 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref } from "vue";
 import PopularTopics from "./PopularTopics.vue";
 import PopularChannels from "./PopularChannels.vue";
 import { useUserProfile } from "../hooks/useUserProfile.js";
 import { useRouter } from "vue-router";
 import avatarImage from "../assets/logo.jpg";
+import SearchBar from "./SearchBar.vue";
 
 export default {
 	name: "Home",
 	components: {
 		PopularTopics,
 		PopularChannels,
+		SearchBar,
 	},
 	setup() {
 		const { user } = useUserProfile();
 		const router = useRouter();
-		const isHidden = ref(false);
-		const topBar = ref(null);
-
-		// 设置头像为变量
 		const avatar = ref(avatarImage);
 
 		const goToProfile = () => {
 			router.push("/profile");
 		};
 
-		const handleScroll = () => {
-			const scrollTop = window.scrollY;
-			if (scrollTop > 100) {
-				isHidden.value = true;
-			} else {
-				isHidden.value = false;
-			}
-		};
+		const handleSearch = (query) => {
+      console.log("搜索内容:", query);
+      // 在这里处理搜索逻辑
+    };
 
-		onMounted(() => {
-			window.addEventListener("scroll", handleScroll);
-		});
-
-		onUnmounted(() => {
-			window.removeEventListener("scroll", handleScroll);
-		});
-
-		return { user, goToProfile, isHidden, topBar, avatar };
+		return { user, goToProfile, avatar, handleSearch };
 	},
 };
 </script>
@@ -74,69 +61,34 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	position: relative;
+	margin: 0 auto;
+	width: 75vw;
+	margin-left: 10vw;
 }
 
 .main-content {
-	width: 70vw; /* 使用视口宽度的70% */
-	padding: 20px;
-	margin-left: -300px;
-}
-
-.top-bar {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	margin-bottom: 20px;
-	position: sticky;
-	top: 40px;
-	background: white;
-	padding: 10px;
-	transition: opacity 0.5s, top 0.5s;
-	z-index: 10;
+	position: relative;
 	width: 100%;
-	height: 60px;
-}
-
-.top-bar.hidden {
-	opacity: 0;
-	top: 0;
-}
-
-.search-bar {
-	width: 60%;
-	padding: 10px;
-	border: 1px solid #ddd;
-	border-radius: 5px;
-	height: 50px;
-}
-.search-button {
-	padding: 10px 20px;
-	margin-left: 10px;
-	border: none;
-	background-color: #007bff;
-	color: white;
-	border-radius: 5px;
-	cursor: pointer;
-	height: 50px;
-}
-.search-button:hover {
-	background-color: #0056b3;
+	padding: 20px;
 }
 
 .user-avatar {
-	width: 50px;
-	height: 50px;
+	width: 70px;
+	height: 70px;
 	border-radius: 50%;
 	cursor: pointer;
 	position: fixed;
 	top: 50px;
 	right: 50px;
 }
-
+.user-avatar:hover {
+	opacity: 0.8;
+}
 .content {
-	width: 70vw; /* 使用视口宽度的70% */
+	width: 100%; 
 	display: flex;
 	flex-direction: column;
+	margin-top: 50px;
 }
 
 .content > * {
