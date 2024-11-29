@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from "vue-router";
 import PostList from "../components/PostList.vue";
 import PostEditor from "../components/PostEditor.vue";
 import UserProfile from "../components/UserProfile.vue";
+import PublishPage from '../components/PublishPage.vue';
+import FavoritesPage from '../components/FavoritesPage.vue';
 import GroupChatStarter from "../components/GroupChatStarter.vue";
 import AddFriendGroup from "../components/AddFriendGroup.vue";
 import PopularTopics from "../components/PopularTopics.vue";
@@ -9,6 +11,7 @@ import CommentSection from "../components/CommentSection.vue";
 import Login from "../components/Login.vue";
 import Register from "../components/Register.vue";
 import Home from "../components/Home.vue";
+import UserEdit from '../components/UserEdit.vue';
 import Contacts from "../components/Contacts.vue";
 
 
@@ -25,6 +28,21 @@ const routes = [
 		path: "/add-friend-group",
 		name: "AddFriendGroup",
 		component: AddFriendGroup,
+	},
+	{
+		path: '/publish',
+		name: 'PublishPage',
+		component: PublishPage,
+	},
+	{
+		path: '/favorites',
+		name: 'FavoritesPage',
+		component: FavoritesPage,
+	},
+	{
+		path: '/user-edit',
+		name: 'UserEdit',
+		component: UserEdit,
 	},
 	{ path: "/popular-topics", name: "PopularTopics", component: PopularTopics },
 	{ path: "/comments", name: "CommentSection", component: CommentSection },
