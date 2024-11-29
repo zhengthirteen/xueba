@@ -49,7 +49,7 @@ export default {
 
 <style scoped>
 .alert-box {
-    position: absolute;
+    position: fixed;
     top: 50px;
     left: 50%;
     transform: translateX(-50%);
@@ -58,7 +58,7 @@ export default {
     line-height: 40px; /* 调整行高 */
     text-align: center;
     border-radius: 5px;
-    z-index: 1000;
+    z-index: 1000;    
     transition: opacity 0.5s ease-out;
 }
 .alert-success {

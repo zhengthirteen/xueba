@@ -8,10 +8,11 @@ import PopularTopics from "../components/PopularTopics.vue";
 import CommentSection from "../components/CommentSection.vue";
 import Login from "../components/Login.vue";
 import Register from "../components/Register.vue";
+import Home from "../components/Home.vue";
 
 
 const routes = [
-	{ path: "/", name: "Home", component: PostList },
+	{ path: "/", name: "Home", component: Home },
 	{ path: "/post", name: "PostEditor", component: PostEditor },
 	{ path: "/profile", name: "UserProfile", component: UserProfile },
 	{

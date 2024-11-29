@@ -19,6 +19,13 @@ export default {
         { id: 1, title: "帖子标题1", popularity: 100 },
         { id: 2, title: "帖子标题2", popularity: 150 },
         { id: 3, title: "帖子标题3", popularity: 200 },
+        { id: 4, title: "帖子标题3", popularity: 200 },
+        { id: 5, title: "帖子标题3", popularity: 200 },
+        { id: 6, title: "帖子标题3", popularity: 200 },
+        { id: 7, title: "帖子标题3", popularity: 200 },
+        { id: 8, title: "帖子标题3", popularity: 200 },
+        { id: 9, title: "帖子标题3", popularity: 200 },
+        { id: 10, title: "帖子标题3", popularity: 200 },
       ],
     };
   },
