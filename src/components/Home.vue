@@ -1,5 +1,6 @@
 <template>
 	<div class="home">
+		<Sidebar />
 		<div class="main-content">
 			<!-- <div class="top-bar" :class="{ hidden: isHidden }" ref="topBar">
 				<input type="text" placeholder="搜索..." class="search-bar" />
@@ -28,6 +29,7 @@ import { useUserProfile } from "../hooks/useUserProfile.js";
 import { useRouter } from "vue-router";
 import avatarImage from "../assets/logo.jpg";
 import SearchBar from "./SearchBar.vue";
+import Sidebar from "./Sidebar.vue";
 
 export default {
 	name: "Home",
@@ -35,6 +37,7 @@ export default {
 		PopularTopics,
 		PopularChannels,
 		SearchBar,
+		Sidebar
 	},
 	setup() {
 		const { user } = useUserProfile();

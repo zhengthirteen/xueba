@@ -1,5 +1,6 @@
 <template>
 	<div class="contacts">
+		<Sidebar />
 		<SearchBar :onSearch="handleSearch" />
 		<div class="contact-list">
 			<div
@@ -29,11 +30,13 @@
 <script>
 import { ref, computed, inject } from "vue";
 import SearchBar from "./SearchBar.vue";
+import Sidebar from "./Sidebar.vue";
 
 export default {
 	name: "Contacts",
 	components: {
 		SearchBar,
+		Sidebar,
 	},
 	setup() {
 		const contacts = ref([

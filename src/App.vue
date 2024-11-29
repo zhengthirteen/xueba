@@ -1,6 +1,5 @@
 <template>
 	<div id="app">
-		<Sidebar v-if="!isAuthPage" />
 		<router-view />
 		<MyAlert :msg="alertMsg" :isTrue="alertIsTrue" />
 	</div>

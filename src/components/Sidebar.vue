@@ -26,7 +26,7 @@ export default {
 
 <style scoped>
 .sidebar {
-  width: 12vw;
+  width: 180px;
   background: #333;
   color: white;
   position: fixed;
