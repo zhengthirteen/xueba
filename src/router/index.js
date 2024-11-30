@@ -14,11 +14,18 @@ import Home from "../components/Home.vue";
 import UserEdit from "../components/UserEdit.vue";
 import Contacts from "../components/Contacts.vue";
 import ForgotPwd from "../components/ForgotPwd.vue";
+import ContactDetail from '../components/ContactDetail.vue';
 
 const routes = [
 	{ path: "/", name: "Home", component: Home },
 	{ path: "/post", name: "PostEditor", component: PostEditor },
 	{ path: "/profile", name: "UserProfile", component: UserProfile },
+	{
+		path: '/contact/:name',
+		name: 'contact-detail',
+		component: ContactDetail,
+		props: true
+	},
 	{
 		path: "/group-chat",
 		name: "GroupChatStarter",
