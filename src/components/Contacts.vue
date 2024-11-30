@@ -226,16 +226,24 @@
 	padding: 10px;
 	border-radius: 10px;
 	margin-bottom: 10px;
+	max-width: 50%;
   }
   
   .my-message {
 	background-color: #d1ffd6;
 	align-self: flex-end;
+	margin-left: 50%;
   }
   
   .other-message {
 	background-color: #f1f1f1;
 	align-self: flex-start;
+  }
+  
+  .message-time {
+	font-size: 12px;
+	color: #888;
+	text-align: right;
   }
   
   .chat-input {
