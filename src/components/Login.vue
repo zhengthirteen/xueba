@@ -1,7 +1,7 @@
 <template>
 	<div class="auth-container">
 		<h2>登录</h2>
-		<form @submit.prevent="test_handleLogin">
+		<form @submit.prevent="handleLogin">
 			<label for="identifier">用户名/邮箱/手机号:</label>
 			<input
 				v-model="identifier"
@@ -22,7 +22,11 @@
 
 			<button type="submit">登录</button>
 		</form>
-		<p>没有账号？<router-link to="/register">去注册</router-link></p>
+		<p>
+			没有账号？<router-link to="/register">去注册</router-link>
+			<br />
+			<router-link to="/forgot-pwd">忘记密码？</router-link>
+		</p>
 	</div>
 </template>
 
@@ -36,6 +40,7 @@ export default {
 		const identifier = ref("");
 		const password = ref("");
 		const showAlert = inject("showAlert");
+		const router = inject("router");
 		let t_id = null;
 
 		const test_handleLogin = () => {
@@ -43,8 +48,9 @@ export default {
 			t_id = setTimeout(() => {
 				if (identifier.value === "test001" && password.value === "123456") {
 					showAlert("登录成功！", true);
+					localStorage.setItem("jwt", "test001");
 					setTimeout(() => {
-						window.location.href = "/";
+						router.push("/");
 					}, 800);
 				} else {
 					showAlert("登录失败，请检查用户名或密码！", false);
@@ -52,19 +58,39 @@ export default {
 			}, 200);
 		};
 
-		// 用 axios 写真实登录逻辑
-		const handleLogin = () => {
-			axios
-				.post("/auth/local", {
-					id: identifier.value,
-					password: password.value,
-				})
-				.then((res) => {
-					console.log(res);
-				})
-				.catch((err) => {
+		const handleLogin = async () => {
+			if (t_id) clearTimeout(t_id);
+			t_id = setTimeout(async () => {
+				let type;
+				if (/^\d+$/.test(identifier.value)) {
+					type = 3; // 手机号
+				} else if (identifier.value.includes("@")) {
+					type = 2; // 邮箱
+				} else {
+					type = 1; // 用户名
+				}
+
+				try {
+					const res = await axios.post("/api/login/login", {
+						data: identifier.value,
+						pwd: password.value,
+						type,
+					});
+					if (res.data.status === 1) {
+						showAlert("登录成功！", true);
+						console.log(res.data.jwt);
+						localStorage.setItem("jwt", res.data.jwt);
+						setTimeout(() => {
+							router.push("/");
+						}, 800);
+					} else {
+						showAlert("登录失败，请检查用户名或密码！", false);
+					}
+				} catch (err) {
 					console.log(err);
-				});
+					showAlert("登录失败，请稍后再试！", false);
+				}
+			}, 200);
 		};
 
 		return {

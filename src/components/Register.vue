@@ -86,6 +86,7 @@
 <script>
 import axios from "axios";
 import { inject, ref } from "vue";
+
 export default {
 	name: "Register",
 	setup() {
@@ -101,6 +102,8 @@ export default {
 		const phoneError = ref("");
 		const passwordError = ref("");
 		const showAlert = inject("showAlert");
+		const router = inject("router");
+		let t_id = null;
 
 		// 邮箱格式验证
 		const validateEmail = () => {
@@ -138,38 +141,43 @@ export default {
 
 		// 注册表单提交
 		const handleRegister = async () => {
-			if (emailError.value) {
-				showAlert("请修正邮箱格式错误后再提交", false);
-				return; // 如果邮箱格式有误，阻止表单提交
-			}
-			if (phoneError.value) {
-				showAlert("请修正手机号格式错误后再提交", false);
-				return;
-			}
-			if (passwordError.value) {
-				showAlert("请修正密码格式错误后再提交", false);
-				return;
-			}
-			try {
-				// 发送POST请求到服务器进行注册
-				const response = await axios.post("/api/login/register", {
-					name: name.value,
-					gender: gender.value,
-					email: email.value,
-					phone: phone.value,
-					address: address.value,
-					school: school.value,
-					password: password.value,
-				});
-				if (response.status === 200) {
-					showAlert("注册成功！");
-					this.$router.push("/login");
-				} else {
-					showAlert("注册失败，请检查输入信息！");
+			if (t_id) clearTimeout(t_id);
+			t_id = setTimeout(async () => {
+				if (emailError.value) {
+					showAlert("请修正邮箱格式错误后再提交", false);
+					return; // 如果邮箱格式有误，阻止表单提交
 				}
-			} catch (error) {
-				showAlert("注册失败，请稍后再试！");
-			}
+				if (phoneError.value) {
+					showAlert("请修正手机号格式错误后再提交", false);
+					return;
+				}
+				if (passwordError.value) {
+					showAlert("请修正密码格式错误后再提交", false);
+					return;
+				}
+				try {
+					// 发送POST请求到服务器进行注册
+					const res = await axios.post("/api/login/register", {
+						username: name.value,
+						gender: gender.value,
+						email: email.value,
+						phone: phone.value,
+						address: address.value,
+						school: school.value,
+						pd: password.value,
+					});
+					if (res.data.code === 1) {
+						showAlert("注册成功！", true);
+						setTimeout(() => {
+							router.push("/login");
+						}, 800);
+					} else {
+						showAlert("该电话已注册！", false);
+					}
+				} catch (error) {
+					showAlert("注册失败，请稍后再试！", false);
+				}
+			}, 200);
 		};
 
 		// 返回响应式数据和方法
