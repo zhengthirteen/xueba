@@ -4,14 +4,6 @@
       <Sidebar />
       <!-- 主内容区 -->
       <div class="main">
-        <!-- 导航栏 -->
-        <nav class="navbar">
-          <ul>
-            <li><router-link to="/profile">我的</router-link></li>
-            <li><router-link to="/publish">发表</router-link></li>
-            <li><router-link to="/favorites">收藏夹</router-link></li>
-          </ul>
-        </nav>
         
         <!-- 用户资料展示部分 -->
         <div class="user-profile">
@@ -176,40 +168,7 @@
     width: 75vw;
     margin-left: 10vw;
   }
-  
-  /* 导航栏样式 */
-  .navbar {
-    position: fixed; /* 固定定位 */
-    top: 0; /* 置顶 */
-    left: 180px; /* 左对齐 */
-    width: calc(100% - 180px); /* 宽度铺满整个屏幕 */
-    background-color: lightgray; /* 背景颜色 */
-    padding: 10px 0; /* 上下内边距 */
-    text-align: center; /* 内容居中 */
-    font-size: 20px;
-    z-index: 10; /* 确保导航栏在最前面 */
-  }
-  
-  .navbar ul {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    display: flex; /* 使用 flex 布局 */
-    justify-content: center; /* 横向居中对齐 */
-  }
-  
-  .navbar li {
-    margin: 0 15px; /* 每个选项之间的间距 */
-  }
-  
-  .navbar a {
-    color: white;
-    text-decoration: none;
-  }
-  
-  .navbar a:hover {
-    text-decoration: underline;
-  }
+
   
   /* 主内容区 */
   .main {
