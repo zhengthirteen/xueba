@@ -15,6 +15,7 @@ import UserEdit from "../components/UserEdit.vue";
 import Contacts from "../components/Contacts.vue";
 import ForgotPwd from "../components/ForgotPwd.vue";
 import ContactDetail from '../components/ContactDetail.vue';
+import PostDetail from "../components/PostDetail.vue";
 
 const routes = [
 	{ path: "/", name: "Home", component: Home },
@@ -57,6 +58,12 @@ const routes = [
 	{ path: "/register", name: "Register", component: Register },
 	{ path: "/contacts", name: "Contacts", component: Contacts },
 	{ path: "/forgot-pwd", name: "ForgotPwd", component: ForgotPwd },
+	{
+		path: "/postDetail",  // 动态路由，`:id` 代表帖子的 ID
+		name: "PostDetail",
+		component: PostDetail,
+		props: true, // 允许通过 props 传递路由参数
+	},
 ];
 
 const router = createRouter({
