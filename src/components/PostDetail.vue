@@ -27,16 +27,15 @@
         
         <div class="post-actions">
             <button @click="toggleLike" :class="{'liked': isLiked}">
-                <img src="@/fig/like_black.png" alt="点赞" />
+                <img :src="likeImage" alt="点赞" />
             </button>
             <button @click="toggleFavorite" :class="{'favorited': isFavorited}">
-                <img src="@/fig/star_black.png" alt="收藏" />
+                <img :src="favoriteImage" alt="收藏" />
             </button>
             <button @click="sharePost">
                 <img src="@/fig/transmit.png" alt="转发" />
             </button>
         </div>
-
 
         <div v-if="shareMessage" class="share-message">
           <p>{{ shareMessage }}</p>
@@ -71,7 +70,9 @@ export default {
     // 使用 usePostActions hook 来管理点赞、收藏、转发功能
     const { 
       isLiked, 
+      likeImage,
       isFavorited, 
+      favoriteImage,
       shareMessage, 
       toggleLike, 
       toggleFavorite, 
@@ -81,7 +82,9 @@ export default {
     return {
       post,
       isLiked,
+      likeImage,
       isFavorited,
+      favoriteImage,
       shareMessage,
       toggleLike,
       toggleFavorite,
@@ -90,6 +93,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .layout {
@@ -188,13 +192,7 @@ button img {
   height: 30px;
 }
 
-button.liked {
-  background-color: #ff4081;
-}
 
-button.favorited {
-  background-color: #ff9800;
-}
 
 .share-message {
   margin-top: 20px;

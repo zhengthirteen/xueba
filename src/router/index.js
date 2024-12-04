@@ -14,7 +14,7 @@ import Home from "../components/Home.vue";
 import UserEdit from "../components/UserEdit.vue";
 import Contacts from "../components/Contacts.vue";
 import ForgotPwd from "../components/ForgotPwd.vue";
-import ContactDetail from '../components/ContactDetail.vue';
+import ContactDetail from "../components/ContactDetail.vue";
 import PostDetail from "../components/PostDetail.vue";
 
 const routes = [
@@ -22,10 +22,10 @@ const routes = [
 	{ path: "/post", name: "PostEditor", component: PostEditor },
 	{ path: "/profile", name: "UserProfile", component: UserProfile },
 	{
-		path: '/contact/:name',
-		name: 'contact-detail',
+		path: "/contact/:name",
+		name: "contact-detail",
 		component: ContactDetail,
-		props: true
+		props: true,
 	},
 	{
 		path: "/group-chat",
@@ -59,7 +59,7 @@ const routes = [
 	{ path: "/contacts", name: "Contacts", component: Contacts },
 	{ path: "/forgot-pwd", name: "ForgotPwd", component: ForgotPwd },
 	{
-		path: "/postDetail",  // 动态路由，`:id` 代表帖子的 ID
+		path: "/postDetail", // 动态路由，`:id` 代表帖子的 ID
 		name: "PostDetail",
 		component: PostDetail,
 		props: true, // 允许通过 props 传递路由参数
@@ -72,8 +72,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-	const isAuthenticated = !!localStorage.getItem("jwt"); // 检查是否存在 JWT
-
+	const isAuthenticated = !!localStorage.getItem("token"); // 检查是否存在 JWT
 	if (
 		to.name !== "Login" &&
 		to.name !== "Register" &&

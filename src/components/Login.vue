@@ -1,7 +1,7 @@
 <template>
 	<div class="auth-container">
 		<h2>登录</h2>
-		<form @submit.prevent="test_handleLogin">
+		<form @submit.prevent="handleLogin">
 			<label for="identifier">用户名/邮箱/手机号:</label>
 			<input
 				v-model="identifier"
@@ -56,7 +56,7 @@ export default {
 			t_id = setTimeout(() => {
 				if (identifier.value === "test001" && password.value === "123456") {
 					showAlert("登录成功！", true);
-					localStorage.setItem("jwt", "test001");
+					localStorage.setItem("token", "test001");
 					setTimeout(() => {
 						router.push("/");
 					}, 800);
@@ -84,10 +84,10 @@ export default {
 						pwd: password.value,
 						type,
 					});
-					if (res.data.status === 1) {
+					if (res.data.code === 1) {
 						showAlert("登录成功！", true);
-						console.log(res.data.jwt);
-						localStorage.setItem("jwt", res.data.jwt);
+						console.log(res.data.data);
+						localStorage.setItem("token", res.data.data);
 						setTimeout(() => {
 							router.push("/");
 						}, 800);
