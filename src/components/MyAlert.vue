@@ -33,7 +33,7 @@ export default {
 			visible.value = true;
 			setTimeout(() => {
 				visible.value = false;
-			}, 2000);
+			}, 1500);
 		};
 
 		watch([() => props.msg, () => props.isTrue], ([newMsg, newIsTrue]) => {
@@ -53,9 +53,11 @@ export default {
 	top: 50px;
 	left: 50%;
 	transform: translateX(-50%);
-	width: 250px; /* 调整宽度 */
+	min-width: 250px; /* 调整最小宽度 */
 	height: 40px; /* 调整高度 */
 	line-height: 40px; /* 调整行高 */
+	padding-left: 15px;
+	padding-right: 10px;
 	text-align: center;
 	border-radius: 5px;
 	z-index: 1000;

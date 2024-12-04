@@ -10,7 +10,22 @@
 				placeholder="输入注册邮箱"
 				required
 			/>
-
+			<label for="phone">手机号:</label>
+			<input
+				v-model="phone"
+				id="phone"
+				type="tel"
+				placeholder="输入注册手机号"
+				required
+			/>
+			<label for="password">新密码:</label>
+			<input
+				v-model="password"
+				id="password"
+				type="password"
+				placeholder="输入新密码"
+				required
+			/>
 			<button type="submit">提交</button>
 		</form>
 		<p>记得密码了？<router-link to="/login">去登录</router-link></p>
@@ -25,26 +40,33 @@ export default {
 	name: "ForgotPassword",
 	setup() {
 		const email = ref("");
+		const phone = ref("");
+		const password = ref("");
 		const showAlert = inject("showAlert");
+		const router = inject("router");
 
 		const handleForgotPassword = async () => {
 			try {
-				const res = await axios.post("/api/login/forgot-password", {
+				const res = await axios.post("/api/login/regetpd", {
 					email: email.value,
+					phone: phone.value,
+					password: password.value,
 				});
-				if (res.data.status === 1) {
-					showAlert("重置密码邮件已发送，请检查邮箱！", true);
+				if (res.data.code === 1) {
+					showAlert("重置密码成功，请检查邮箱！", true);
+					router.push("/login");
 				} else {
-					showAlert("发送失败，请检查邮箱地址！", false);
+					showAlert("重置密码失败，请检查手机号或邮箱是否正确！", false);
 				}
 			} catch (err) {
 				console.log(err);
 				showAlert("发送失败，请稍后再试！", false);
 			}
 		};
-
 		return {
 			email,
+			phone,
+			password,
 			handleForgotPassword,
 		};
 	},

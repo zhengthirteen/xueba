@@ -87,8 +87,7 @@
 import { ref } from "vue";
 import Sidebar from "../components/Sidebar.vue"; // 导入 Sidebar 组件
 import { useRouter } from "vue-router"; // 导入 Vue Router
-import axios from "axios"; // 导入 axios
-
+import axios from "../utils/axios";
 export default {
 	name: "UserEdit",
 	components: {
