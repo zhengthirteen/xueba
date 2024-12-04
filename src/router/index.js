@@ -16,6 +16,7 @@ import Contacts from "../components/Contacts.vue";
 import ForgotPwd from "../components/ForgotPwd.vue";
 import ContactDetail from "../components/ContactDetail.vue";
 import PostDetail from "../components/PostDetail.vue";
+import ChatHistory from "../components/ChatHistory.vue";
 import UpdatePassword from "../components/UpdatePassword.vue";
 
 const routes = [
@@ -28,6 +29,11 @@ const routes = [
 		component: ContactDetail,
 		props: true,
 	},
+	{
+		path: "/chat-history/:userId/:userName",
+		name: "ChatHistory",
+		component: ChatHistory,
+	  },
 	{
 		path: "/group-chat",
 		name: "GroupChatStarter",
