@@ -16,6 +16,7 @@
 				<option value="">请选择性别</option>
 				<option value="1">男</option>
 				<option value="2">女</option>
+				<option value="0">保密</option>
 			</select>
 
 			<label for="email">邮箱:</label>

@@ -16,6 +16,7 @@ import Contacts from "../components/Contacts.vue";
 import ForgotPwd from "../components/ForgotPwd.vue";
 import ContactDetail from "../components/ContactDetail.vue";
 import PostDetail from "../components/PostDetail.vue";
+import UpdatePassword from "../components/UpdatePassword.vue";
 
 const routes = [
 	{ path: "/", name: "Home", component: Home },
@@ -63,6 +64,11 @@ const routes = [
 		name: "PostDetail",
 		component: PostDetail,
 		props: true, // 允许通过 props 传递路由参数
+	},
+	{
+		path: "/update-password",
+		name: "UpdatePassword",
+		component: UpdatePassword,
 	},
 ];
 

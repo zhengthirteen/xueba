@@ -52,16 +52,18 @@
 			<!-- 退出/切换账号按钮 -->
 			<div class="logout-btn">
 				<button @click="logout">退出/切换账号</button>
+				<button @click="goToUpdatePassword">更新密码</button>
+				<button @click="deleteAccount">注销账户</button>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script>
-import { computed } from "vue";
+import { computed ,inject} from "vue";
 import { useUserProfile } from "../hooks/useUserProfile.js";
 import Sidebar from "../components/Sidebar.vue"; // 导入 Sidebar 组件
-import { useRouter } from "vue-router"; // 导入 Vue Router
+
 
 export default {
 	name: "UserProfile",
@@ -71,7 +73,8 @@ export default {
 	setup() {
 		const { user, email, phone, address, school, editProfile } =
 			useUserProfile();
-		const router = useRouter(); // 获取路由实例
+		const router = inject("router");
+		const showAlert = inject("showAlert");
 
 		// 动态类绑定，根据用户状态返回对应的 CSS 类
 		const statusClass = computed(() => {
@@ -93,6 +96,38 @@ export default {
 			router.push("/login"); // 跳转到登录页面
 		};
 
+		const goToUpdatePassword = () => {
+			router.push("/update-password");
+		};
+
+		const deleteAccount = async () => {
+			const password = prompt(
+				"请输入您的密码以确认注销账户，注意：注销账户后所有数据将被删除："
+			);
+			console.log(password);
+			
+			if (!password) {
+				showAlert("密码不能为空！", false);
+				return;
+			}
+			// showAlert("账户已注销", true);
+			try {
+				const res = await axios.post("/api/user/delete", {
+					user_id: localStorage.getItem("uid"),
+					password: password,
+				});
+				if (res.data.code === 1) {
+					showAlert("账户已注销", true);
+					router.push("/login");
+				} else {
+					showAlert("注销账户失败，请检查密码是否正确！", false);
+				}
+			} catch (err) {
+				console.log(err);
+				showAlert("注销失败，请稍后再试！", false);
+			}
+		};
+
 		return {
 			user,
 			email,
@@ -102,6 +137,8 @@ export default {
 			statusClass,
 			logout,
 			editProfile,
+			goToUpdatePassword,
+			deleteAccount,
 		};
 	},
 };
@@ -242,14 +279,17 @@ body {
 
 .logout-btn button {
 	padding: 10px 20px;
-	background-color: #ff4d4f;
+	background-color: lightskyblue;
 	color: white;
 	border: none;
 	font-size: 16px;
 	cursor: pointer;
+	margin-right: 50px;
+	margin-left: 50px;
+	border-radius: 6px;
 }
 
 .logout-btn button:hover {
-	background-color: #e43f3b;
+	background-color: deepskyblue;
 }
 </style>
