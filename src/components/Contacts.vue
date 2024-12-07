@@ -178,26 +178,37 @@ export default {
       isAddFriendDialogOpen.value = false;
     };
 
-    // 添加好友
-	const addFriend = () => {
-  if (newFriendName.value.trim()) {
-    // 假设我们要向对方发送请求
-    const friendRequest = {
-      sender: 'me',    // 当前用户
-      receiver: newFriendName.value,  // 接受请求的好友id（或者用户名）
-      status: 'pending',  // 请求状态，'pending' 表示待处理
-    };
+	// 添加好友
+	const addFriend = async () => {
+	if (newFriendName.value.trim()) {
+		// 构建请求体
+		const friendRequest = {
+		userID: localStorage.getItem("user_id"),    // 当前用户ID
+		friendID: newFriendName.value,  // 目标好友的ID或者用户名
+		};
 
-    // 假设请求被发送到某个服务器或者状态管理系统，先存储到本地
-    receivedRequests.value.push(friendRequest);  // 将请求加入收到的请求列表
+		try {
+		// 使用axios发送请求到服务器
+		const response = await axios.post('/api/friend/apply', friendRequest);
 
-    // 使用 showAlert 提示
-	showAlert("请求已发送，请等待对方的回应。",true);
-
-    newFriendName.value = '';  // 清空输入框
-    closeAddFriendDialog();    // 关闭添加好友弹窗
-  }
-};
+		if (response.status === 200) {
+			// 请求成功，处理响应结果
+			showAlert("请求已发送，请等待对方的回应。", true);
+			newFriendName.value = '';  // 清空输入框
+			closeAddFriendDialog();    // 关闭添加好友弹窗
+		} else {
+			// 处理错误响应
+			showAlert(`请求失败: ${response.data.message}`, false);
+		}
+		} catch (error) {
+		// 捕获并处理网络请求错误
+		showAlert(`请求错误: ${error.response ? error.response.data.message : error.message}`, false);
+		}
+	} else {
+		// 输入为空时提示
+		showAlert("请输入好友id", false);
+	}
+	};
 
     // 打开发起群聊对话框
     const openGroupChatDialog = () => {
@@ -367,7 +378,7 @@ html,
   .dot {
 	width: 3px;
 	height: 3px;
-	background-color: white;
+	background-color: black;
 	border-radius: 50%;
 	display: inline-block;
   }
