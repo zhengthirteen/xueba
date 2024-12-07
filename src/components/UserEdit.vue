@@ -31,8 +31,6 @@
 					type="text"
 					placeholder="用户名"
 				/>
-				<label for="email">个人简介：</label>
-				<textarea v-model="user.bio" placeholder="个人简介"></textarea>
 				<label for="gender">性别：</label>
 				<select id="gender" v-model="user.gender">
 					<option value="保密">保密</option>
@@ -84,10 +82,11 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Sidebar from "../components/Sidebar.vue"; // 导入 Sidebar 组件
 import { useRouter } from "vue-router"; // 导入 Vue Router
 import axios from "../utils/axios";
+
 export default {
 	name: "UserEdit",
 	components: {
@@ -95,20 +94,50 @@ export default {
 	},
 	setup() {
 		const router = useRouter();
-
-		// 假设我们从父组件传入用户数据
 		const user = ref({
-			name: "用户名",
-			bio: "这里是用户的个人简介。",
-			avatar: "https://via.placeholder.com/100",
-			status: "在线",
-			gender: "保密", // 性别字段可以修改
+			name: "",
+			avatar: "",
+			status: "",
+			gender: "",
 		});
 
-		const email = ref("user@example.com");
-		const phone = ref("+1 234 567 890");
-		const address = ref("1234 Elm Street, Springfield, IL");
-		const school = ref("Springfield University");
+		const email = ref("");
+		const phone = ref("");
+		const address = ref("");
+		const school = ref("");
+
+		const fetchUserInfo = async () => {
+			const userId = localStorage.getItem("user_id");
+			if (!userId) {
+				showAlert("用户ID未找到", false);
+				return;
+			}
+
+			try {
+				const response = await axios.get(`/api/user/getinfo`, {
+					params: { userid: userId },
+				});
+				const data = response.data.data;
+				user.value.name = data.username;
+				user.value.gender = data.gender === 1 ? "男" : "女";
+				email.value = data.email;
+				phone.value = data.phone;
+				address.value = data.address;
+				school.value = data.school;
+
+				const avatarResponse = await axios.get(`/api/user/getimg`, {
+					params: { userid: userId },
+				});
+				user.value.avatar = avatarResponse.data;
+			} catch (error) {
+				showAlert("获取用户信息失败", false);
+				console.error("Failed to fetch user info", error);
+			}
+		};
+
+		onMounted(() => {
+			fetchUserInfo();
+		});
 
 		// 触发文件输入框
 		const triggerFileInput = () => {
@@ -117,12 +146,28 @@ export default {
 		};
 
 		// 处理头像更改
-		const handleAvatarChange = (event) => {
+		const handleAvatarChange = async (event) => {
 			const file = event.target.files[0];
 			if (file) {
 				const reader = new FileReader();
-				reader.onload = () => {
-					user.value.avatar = reader.result;
+				reader.onload = async () => {
+					const formData = {
+						userid: localStorage.getItem("user_id"),
+						url: reader.result,
+					};
+
+					try {
+						const response = await axios.post("/api/user/updateimg", formData);
+						if (response.data.code === 1) {
+							user.value.avatar = response.data.data;
+							showAlert("头像已更新", true);
+						} else {
+							showAlert("头像更新失败，请稍后再试！", false);
+						}
+					} catch (error) {
+						console.error("头像更新失败", error);
+						showAlert("头像更新失败，请稍后再试！", false);
+					}
 				};
 				reader.readAsDataURL(file);
 			}
@@ -130,32 +175,35 @@ export default {
 
 		// 保存用户信息
 		const saveProfile = async () => {
+			if (!user.value.name || !email.value || !phone.value) {
+				showAlert("用户名、邮箱和手机号不能为空", false);
+				return;
+			}
+
 			const userData = {
-				name: user.value.name,
-				bio: user.value.bio,
-				avatar: user.value.avatar,
-				status: user.value.status,
-				gender: user.value.gender,
-				email: email.value,
-				phone: phone.value,
-				address: address.value,
-				school: school.value,
+				uid: localStorage.getItem("user_id"),
+				info: {
+					username: user.value.name,
+					gender: user.value.gender === "男" ? 1 : 0,
+					status: user.value.status,
+					email: email.value,
+					phone: phone.value,
+					address: address.value,
+					school: school.value,
+				},
 			};
 
 			try {
-				const response = await axios.post(
-					"https://your-api-endpoint.com/api/user/update",
-					userData
-				);
-				if (response.data.success) {
-					alert("资料已保存");
+				const response = await axios.post("/api/user/updateuserinfo", userData);
+				if (response.status === 200 && response.data.code === 1) {
+					showAlert("资料已保存", true);
 					router.push("/profile");
 				} else {
-					alert("保存失败，请稍后再试！");
+					showAlert("保存失败，请稍后再试！", false);
 				}
 			} catch (error) {
 				console.error("保存失败", error);
-				alert("保存失败，请稍后再试！");
+				showAlert("保存失败，请稍后再试！", false);
 			}
 		};
 
