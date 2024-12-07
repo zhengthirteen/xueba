@@ -94,17 +94,17 @@ export default {
 	},
 	setup() {
 		const router = useRouter();
-		const user = ref({
-			name: "",
-			avatar: "",
+		const user = reactive({
+			username: "",
 			status: "",
 			gender: "",
+			email: "",
+			phone: "",
+			address: "",
+			school: "",
 		});
 
-		const email = ref("");
-		const phone = ref("");
-		const address = ref("");
-		const school = ref("");
+		let avatar = ref("src/assets/logo.jpg");
 
 		const fetchUserInfo = async () => {
 			const userId = localStorage.getItem("user_id");
@@ -118,17 +118,18 @@ export default {
 					params: { userid: userId },
 				});
 				const data = response.data.data;
-				user.value.name = data.username;
-				user.value.gender = data.gender === 1 ? "男" : "女";
-				email.value = data.email;
-				phone.value = data.phone;
-				address.value = data.address;
-				school.value = data.school;
+				user.username = data.username;
+				user.status = data.status;
+				user.gender = data.gender;
+				user.email = data.email;
+				user.phone = data.phone;
+				user.address = data.address;
+				user.school = data.school;
 
 				const avatarResponse = await axios.get(`/api/user/getimg`, {
 					params: { userid: userId },
 				});
-				user.value.avatar = avatarResponse.data;
+				avatar.value = avatarResponse.data;
 			} catch (error) {
 				showAlert("获取用户信息失败", false);
 				console.error("Failed to fetch user info", error);
@@ -159,7 +160,7 @@ export default {
 					try {
 						const response = await axios.post("/api/user/updateimg", formData);
 						if (response.data.code === 1) {
-							user.value.avatar = response.data.data;
+							avatar.value = response.data.data;
 							showAlert("头像已更新", true);
 						} else {
 							showAlert("头像更新失败，请稍后再试！", false);
@@ -175,7 +176,7 @@ export default {
 
 		// 保存用户信息
 		const saveProfile = async () => {
-			if (!user.value.name || !email.value || !phone.value) {
+			if (!user.username || !user.email || !user.phone) {
 				showAlert("用户名、邮箱和手机号不能为空", false);
 				return;
 			}
@@ -183,13 +184,13 @@ export default {
 			const userData = {
 				uid: localStorage.getItem("user_id"),
 				info: {
-					username: user.value.name,
-					gender: user.value.gender === "男" ? 1 : 0,
-					status: user.value.status,
-					email: email.value,
-					phone: phone.value,
-					address: address.value,
-					school: school.value,
+					username: user.username,
+					gender: user.gender === "男" ? 1 : 0,
+					status: user.status,
+					email: user.email,
+					phone: user.phone,
+					address: user.address,
+					school: user.school,
 				},
 			};
 
@@ -214,10 +215,7 @@ export default {
 
 		return {
 			user,
-			email,
-			phone,
-			address,
-			school,
+			avatar,
 			saveProfile,
 			cancelEdit,
 			triggerFileInput,
