@@ -95,7 +95,7 @@
   </template>
   
 <script>
-import { ref, nextTick, computed,inject } from 'vue';
+import { ref, nextTick, computed, inject } from 'vue';
 import Sidebar from "../components/Sidebar.vue";
 import { useRouter } from 'vue-router';  // 使用 Vue Router 进行页面跳转
 import axios from '../utils/axios';
@@ -110,7 +110,7 @@ export default {
     const selectedContact = ref(null);
     const searchQuery = ref('');
     const newFriendName = ref('');
-	const showAlert = inject("showAlert");
+    const showAlert = inject("showAlert");
     const router = useRouter();  // 获取 Vue Router 实例
 
     const contacts = ref([]);
@@ -124,6 +124,7 @@ export default {
 
         contacts.value = response.data.data.map(contact => ({
           name: contact.friendName,
+          friendID: contact.friendID, // 添加 friendID
           messages: [], // 假设消息不在初始数据中
         }));
       } catch (error) {
@@ -134,38 +135,102 @@ export default {
 
     // 调用 fetchContacts
     fetchContacts();
-	const receivedRequests = ref([ // 收到的好友请求列表
-  		{ name: 'Charlie', status: 'pending' }, // 假设有一些请求
-  		{ name: 'David', status: 'pending' }
-	]);
+
+    const receivedRequests = ref([]);
+
+    const fetchReceivedRequests = async () => {
+      const userID = localStorage.getItem("user_id");
+      try {
+        const response = await axios.post('/api/friend/applyforget', {
+          userID: parseInt(userID, 10)
+        });
+
+        receivedRequests.value = response.data.data.map(request => ({
+          name: `User ${request.friendID}`, // 假设好友名称为 User + friendID
+          status: request.relationStatus,
+          friendID: request.friendID,
+          relationID: request.relationID
+        }));
+      } catch (error) {
+        console.error('获取好友请求时出错:', error);
+        showAlert('获取好友请求时出错'); // 使用 showAlert 抛出提示
+      }
+    };
+
+    // 调用 fetchReceivedRequests
+    fetchReceivedRequests();
 
     const selectedContactsForGroupChat = ref([]);
     const isAddFriendDialogOpen = ref(false);
     const isGroupChatDialogOpen = ref(false);
-	const isReceivedRequestsDialogOpen = ref(false); // 控制“收到申请”对话框的显示状态
+    const isReceivedRequestsDialogOpen = ref(false); // 控制“收到申请”对话框的显示状态
     const isMenuVisible = ref(false);
 
     const filteredContacts = computed(() => {
       return contacts.value.filter(contact => contact.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
     });
 
-    const selectContact = (contact) => {
+    const selectContact = async (contact) => {
       selectedContact.value = contact;
+      await fetchMessages(contact.friendID);
     };
 
-    const sendMessage = () => {
+    const sendMessage = async () => {
       if (newMessage.value.trim() && selectedContact.value) {
+        const userID = parseInt(localStorage.getItem("user_id"), 10);
         const message = {
-          text: newMessage.value,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          sender: 'me'
+          msg_type: 2,
+          user_id: userID,
+          pic_id: userID, // 假设 picID 与 userID 相同
+          rela_id: selectedContact.value.friendID,
+          status: 0,
+          content: newMessage.value
         };
-        selectedContact.value.messages.push(message);
-        newMessage.value = '';
-        nextTick(() => {
-          const messageList = document.querySelector('.message-list');
-          messageList.scrollTop = messageList.scrollHeight;
+
+        try {
+          const response = await axios.post('/api/friend/sendmessage', message);
+
+          if (response.status === 200 && response.data.code === 1) {
+            const sentMessage = {
+              text: newMessage.value,
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              sender: 'me'
+            };
+            selectedContact.value.messages.push(sentMessage);
+            newMessage.value = '';
+            nextTick(() => {
+              const messageList = document.querySelector('.message-list');
+              messageList.scrollTop = messageList.scrollHeight;
+            });
+            showAlert("消息发送成功", true);
+          } else {
+            showAlert(`消息发送失败: ${response.data.msg}`, false);
+          }
+        } catch (error) {
+          showAlert(`消息发送错误: ${error.response ? error.response.data.msg : error.message}`, false);
+        }
+      }
+    };
+
+    const fetchMessages = async (friendID) => {
+      const userID = parseInt(localStorage.getItem("user_id"), 10);
+      try {
+        const response = await axios.post('/api/friend/getmessage', {
+          userID: userID,
+          friendID: friendID
         });
+
+        if (response.status === 200 && response.data.code === 1) {
+          selectedContact.value.messages = response.data.data.map(msg => ({
+            text: msg.msgContent,
+            time: msg.msgTime,
+            sender: msg.userID === userID ? 'me' : 'friend'
+          }));
+        } else {
+          showAlert(`获取消息失败: ${response.data.msg}`, false);
+        }
+      } catch (error) {
+        showAlert(`获取消息错误: ${error.response ? error.response.data.msg : error.message}`, false);
       }
     };
 
@@ -176,8 +241,8 @@ export default {
     };
 
     const goToDetailPage = (contact) => {
-      // 跳转到联系人详细信息页面，假设路由设置了 /contact/:name 路径
-      router.push({ name: 'contact-detail', params: { name: contact.name } });
+      // 跳转到联系人详细信息页面，并传递联系人的id
+      router.push({ name: 'contact-detail', params: { id: contact.id } });
     };
 
     // 显示和隐藏菜单
@@ -196,37 +261,38 @@ export default {
       isAddFriendDialogOpen.value = false;
     };
 
-	// 添加好友
-	const addFriend = async () => {
-	if (newFriendName.value.trim()) {
-		// 构建请求体
-		const friendRequest = {
-		userID: localStorage.getItem("user_id"),    // 当前用户ID
-		friendID: newFriendName.value,  // 目标好友的ID或者用户名
-		};
+    // 添加好友
+    const addFriend = async () => {
+      if (newFriendName.value.trim()) {
+        // 构建请求体
+        const friendRequest = {
+          userID: parseInt(localStorage.getItem("user_id"), 10),    // 当前用户ID
+          friendID: parseInt(newFriendName.value, 10),  // 目标好友的ID
+          status: 0 // 好友申请中
+        };
 
-		try {
-		// 使用axios发送请求到服务器
-		const response = await axios.post('/api/friend/apply', friendRequest);
+        try {
+          // 使用axios发送请求到服务器
+          const response = await axios.post('/api/friend/apply', friendRequest);
 
-		if (response.status === 200) {
-			// 请求成功，处理响应结果
-			showAlert("请求已发送，请等待对方的回应。", true);
-			newFriendName.value = '';  // 清空输入框
-			closeAddFriendDialog();    // 关闭添加好友弹窗
-		} else {
-			// 处理错误响应
-			showAlert(`请求失败: ${response.data.message}`, false);
-		}
-		} catch (error) {
-		// 捕获并处理网络请求错误
-		showAlert(`请求错误: ${error.response ? error.response.data.message : error.message}`, false);
-		}
-	} else {
-		// 输入为空时提示
-		showAlert("请输入好友id", false);
-	}
-	};
+          if (response.status === 200 && response.data.code === 1) {
+            // 请求成功，处理响应结果
+            showAlert("请求已发送，请等待对方的回应。", true);
+            newFriendName.value = '';  // 清空输入框
+            closeAddFriendDialog();    // 关闭添加好友弹窗
+          } else {
+            // 处理错误响应
+            showAlert(`请求失败: ${response.data.msg}`, false);
+          }
+        } catch (error) {
+          // 捕获并处理网络请求错误
+          showAlert(`请求错误: ${error.response ? error.response.data.msg : error.message}`, false);
+        }
+      } else {
+        // 输入为空时提示
+        showAlert("请输入好友id", false);
+      }
+    };
 
     // 打开发起群聊对话框
     const openGroupChatDialog = () => {
@@ -252,55 +318,94 @@ export default {
         closeGroupChatDialog();
       }
     };
-	// 打开“收到申请”对话框
-	const openReceivedRequestsDialog = () => {
-  		isReceivedRequestsDialogOpen.value = true;
-  		isMenuVisible.value = false; // 隐藏菜单
-	};
-	// 关闭“收到申请”对话框
-	const closeReceivedRequestsDialog = () => {
-		isReceivedRequestsDialogOpen.value = false;
-	};
 
-	// 接受好友请求
-	const acceptRequest = (request) => {
-		// 将联系人添加到通讯录
-		contacts.value.push({ name: request.name, messages: [] });
+    // 打开“收到申请”对话框
+    const openReceivedRequestsDialog = () => {
+      isReceivedRequestsDialogOpen.value = true;
+      isMenuVisible.value = false; // 隐藏菜单
+    };
 
-		// 从收到的请求列表中移除已接受的请求
-		receivedRequests.value = receivedRequests.value.filter(r => r !== request);
+    // 关闭“收到申请”对话框
+    const closeReceivedRequestsDialog = () => {
+      isReceivedRequestsDialogOpen.value = false;
+    };
 
-		// 发送一条消息给对方
-		const message = {
-			text: `Hi ${request.name}, I accepted your friend request!`, // 自动回复信息
-			time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-			sender: 'me'
-		};
+    // 接受好友请求
+    const acceptRequest = async (request) => {
+      const userID = parseInt(localStorage.getItem("user_id"), 10);
+      const handleRequest = {
+        relationID: request.relationID,
+        relationStatus: 1, // 成为好友
+        userID: userID,
+        friendID: request.friendID
+      };
 
-		// 找到接受请求的联系人并将该消息加入联系人聊天记录
-		const contact = contacts.value.find(contact => contact.name === request.name);
-		if (contact) {
-			contact.messages.push(message);
-		}
+      try {
+        const response = await axios.post('/api/friend/applyforhandle', handleRequest);
 
-		// 弹出提示框通知用户
-		showAlert("您已接受" + request.name + "的好友请求", true);
+        if (response.status === 200 && response.data.code === 1) {
+          // 将联系人添加到通讯录
+          contacts.value.push({ name: request.name, messages: [] });
 
-		// 关闭收到申请对话框
-		closeReceivedRequestsDialog();
-	};
+          // 从收到的请求列表中移除已接受的请求
+          receivedRequests.value = receivedRequests.value.filter(r => r !== request);
 
-	// 拒绝好友请求
-	const rejectRequest = (request) => {
-		receivedRequests.value = receivedRequests.value.filter(r => r !== request);
-		closeReceivedRequestsDialog();
-	};
+          // 发送一条消息给对方
+          const message = {
+            text: `Hi ${request.name}, I accepted your friend request!`, // 自动回复信息
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            sender: 'me'
+          };
+
+          // 找到接受请求的联系人并将该消息加入联系人聊天记录
+          const contact = contacts.value.find(contact => contact.name === request.name);
+          if (contact) {
+            contact.messages.push(message);
+          }
+
+          // 弹出提示框通知用户
+          showAlert("您已接受" + request.name + "的好友请求", true);
+
+          // 关闭收到申请对话框
+          closeReceivedRequestsDialog();
+        } else {
+          showAlert(`请求处理失败: ${response.data.msg}`, false);
+        }
+      } catch (error) {
+        showAlert(`请求处理错误: ${error.response ? error.response.data.msg : error.message}`, false);
+      }
+    };
+
+    // 拒绝好友请求
+    const rejectRequest = async (request) => {
+      const userID = parseInt(localStorage.getItem("user_id"), 10);
+      const handleRequest = {
+        relationID: request.relationID,
+        relationStatus: 2, // 拒绝申请
+        userID: userID,
+        friendID: request.friendID
+      };
+
+      try {
+        const response = await axios.post('/api/friend/applyforhandle', handleRequest);
+
+        if (response.status === 200 && response.data.code === 1) {
+          receivedRequests.value = receivedRequests.value.filter(r => r !== request);
+          showAlert("您已拒绝" + request.name + "的好友请求", true);
+          closeReceivedRequestsDialog();
+        } else {
+          showAlert(`请求处理失败: ${response.data.msg}`, false);
+        }
+      } catch (error) {
+        showAlert(`请求处理错误: ${error.response ? error.response.data.msg : error.message}`, false);
+      }
+    };
 
     return {
       newMessage, contacts, selectedContact, selectContact, sendMessage, searchQuery, filteredContacts, handleKeydown, goToDetailPage,
       isAddFriendDialogOpen, newFriendName, openAddFriendDialog, closeAddFriendDialog, addFriend,
       isGroupChatDialogOpen, selectedContactsForGroupChat, openGroupChatDialog, closeGroupChatDialog, startGroupChat,
-      isMenuVisible, toggleMenu,isReceivedRequestsDialogOpen, receivedRequests, openReceivedRequestsDialog, closeReceivedRequestsDialog, acceptRequest, rejectRequest
+      isMenuVisible, toggleMenu, isReceivedRequestsDialogOpen, receivedRequests, openReceivedRequestsDialog, closeReceivedRequestsDialog, acceptRequest, rejectRequest
     };
   }
 };
