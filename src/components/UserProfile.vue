@@ -14,39 +14,37 @@
 			</nav>
 			<!-- 用户资料展示部分 -->
 			<div class="user-profile">
-				<img :src="user.avatar" alt="用户头像" />
+				<img :src="avatar" alt="用户头像" />
 				<div class="user-info">
-					<h2>{{ user.name }}</h2>
-					<p>{{ user.bio }}</p>
+					<h2>{{ user.username }}</h2>
 					<p>
-						<strong>状态：</strong
-						><span :class="statusClass">{{ user.status }}</span>
+						<strong>状态：</strong>
+						<span :class="statusClass">{{ user.status }}</span>
 					</p>
 					<!-- 显示性别 -->
-					<p><strong>性别：</strong>{{ user.gender }}</p>
-					<!-- 性别不可修改 -->
+					<p><strong>性别：</strong>{{ user.gender === 1 ? "男" : "女" }}</p>
 				</div>
 				<button @click="editProfile">编辑</button>
 			</div>
 
 			<!-- 邮箱信息显示部分 -->
 			<div class="user-email">
-				<p><strong>邮箱：</strong>{{ email }}</p>
+				<p><strong>邮箱：</strong>{{ user.email }}</p>
 			</div>
 
 			<!-- 新增手机号信息 -->
 			<div class="user-phone">
-				<p><strong>手机号：</strong>{{ phone }}</p>
+				<p><strong>手机号：</strong>{{ user.phone }}</p>
 			</div>
 
 			<!-- 新增地址信息 -->
 			<div class="user-address">
-				<p><strong>地址：</strong>{{ address }}</p>
+				<p><strong>地址：</strong>{{ user.address }}</p>
 			</div>
 
 			<!-- 新增学校信息 -->
 			<div class="user-school">
-				<p><strong>学校：</strong>{{ school }}</p>
+				<p><strong>学校：</strong>{{ user.school }}</p>
 			</div>
 
 			<!-- 退出/切换账号按钮 -->
@@ -60,10 +58,10 @@
 </template>
 
 <script>
-import { computed ,inject} from "vue";
+import { computed, inject, onMounted, ref, reactive } from "vue";
+import axios from "../utils/axios";
 import { useUserProfile } from "../hooks/useUserProfile.js";
 import Sidebar from "../components/Sidebar.vue"; // 导入 Sidebar 组件
-
 
 export default {
 	name: "UserProfile",
@@ -71,10 +69,63 @@ export default {
 		Sidebar,
 	},
 	setup() {
-		const { user, email, phone, address, school, editProfile } =
-			useUserProfile();
+		const user = reactive({});
+		let avatar = ref("src/assets/logo.jpg");
+		const { editProfile } = useUserProfile();
 		const router = inject("router");
 		const showAlert = inject("showAlert");
+
+		const getUserInfo = async () => {
+			try {
+				const res = await axios.get("/api/user/getinfo", {
+					params: { userid: localStorage.getItem("user_id") },
+				});
+				if (res.data.code === 1) {
+					user.username = res.data.data.username;
+					user.status = res.data.data.status;
+					user.gender = res.data.data.gender;
+					user.email = res.data.data.email;
+					user.phone = res.data.data.phone;
+					user.address = res.data.data.address;
+					user.school = res.data.data.school;
+				} else {
+					showAlert("获取用户信息失败，请稍后再试！", false);
+				}
+			} catch (err) {
+				console.log(err);
+				showAlert("获取用户信息失败，请稍后再试！", false);
+			}
+
+			try {
+				const res = await axios.get("/api/user/getimg", {
+					params: { userid: localStorage.getItem("user_id") },
+				});
+				if (res.data.code === 1) {
+					avatar.value = res.data.data;
+				} else {
+					showAlert("获取用户头像失败，请稍后再试！", false);
+				}
+			} catch (err) {
+				console.log(err);
+				showAlert("获取用户头像失败，请稍后再试！", false);
+			}
+		};
+
+		function test_getUserInfo() {
+			user.username = "测试用户名";
+			user.status = "在线";
+			user.gender = 1;
+			user.email = "123@qq.com";
+			user.phone = "12345678901";
+			user.address = "测试地址";
+			user.school = "测试学校";
+			avatar.value = "src/assets/logo.jpg";
+		}
+
+		onMounted(() => {
+			// test_getUserInfo();
+			getUserInfo();
+		});
 
 		// 动态类绑定，根据用户状态返回对应的 CSS 类
 		const statusClass = computed(() => {
@@ -92,7 +143,9 @@ export default {
 
 		// 退出/切换账号函数
 		const logout = () => {
-			// 这里可以添加清除用户会话、缓存等操作
+			// 清除用户会话、缓存
+			localStorage.removeItem("token"); // 清除 token
+			localStorage.removeItem("user_id"); // 清除 user_id
 			router.push("/login"); // 跳转到登录页面
 		};
 
@@ -105,7 +158,7 @@ export default {
 				"请输入您的密码以确认注销账户，注意：注销账户后所有数据将被删除"
 			);
 			console.log(password);
-			
+
 			if (!password) {
 				showAlert("密码不能为空！", false);
 				return;
@@ -129,10 +182,7 @@ export default {
 
 		return {
 			user,
-			email,
-			phone,
-			address,
-			school,
+			avatar,
 			statusClass,
 			logout,
 			editProfile,

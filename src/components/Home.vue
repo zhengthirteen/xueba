@@ -2,10 +2,6 @@
 	<div class="home">
 		<Sidebar />
 		<div class="main-content">
-			<!-- <div class="top-bar" :class="{ hidden: isHidden }" ref="topBar">
-				<input type="text" placeholder="搜索..." class="search-bar" />
-				<button class="search-button">搜索</button>
-			</div> -->
 			<SearchBar :onSearch="handleSearch" />
 			<div class="content">
 				<PopularTopics />
