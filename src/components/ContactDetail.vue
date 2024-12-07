@@ -286,9 +286,9 @@ body {
 
 /* 返回按钮样式 */
 .back-btn {
-  position: absolute;
-  top: -325px;
-  left: -50px;
+  position: fixed;
+  top: 4vh;
+  left: 13vw;
   padding: 10px 20px;
   background-color: #007bff;
   color: white;
@@ -307,9 +307,9 @@ body {
 
 /* 查找聊天记录按钮样式 */
 .find-chat-btn {
-  position: absolute;
-  top: -30vh;
-  left: 65vw;
+  position: fixed;
+  top: 20vh;
+  left: 80vw;
   padding: 10px 20px;
   background-color: #007bff;
   color: white;
