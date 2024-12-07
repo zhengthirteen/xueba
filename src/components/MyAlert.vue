@@ -27,9 +27,7 @@ export default {
 	},
 	setup(props) {
 		let visible = ref(false);
-
 		const show = () => {
-			console.log("show");
 			visible.value = true;
 			setTimeout(() => {
 				visible.value = false;

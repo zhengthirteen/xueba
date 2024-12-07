@@ -39,8 +39,6 @@ export default {
 
 		// 提供 showAlert 方法
 		const showAlert = (msg, isTrue) => {
-			console.log("showAlert");
-
 			alertMsg.value = "";
 			alertIsTrue.value = false;
 			setTimeout(() => {
@@ -51,7 +49,6 @@ export default {
 
 		// 提供 showConfirm 方法
 		const showConfirm = (confirmMessage, msg, isTrue, callback) => {
-			console.log("showConfirm");
 			confirmMsg.value = "";
 			confirmAlertMsg.value = "";
 			confirmIsTrue.value = false;

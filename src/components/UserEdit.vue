@@ -22,6 +22,10 @@
 					<span class="change-text">更换</span>
 				</div>
 			</div>
+			<img id="cropper-image" style="display: none" />
+			<div class="action-buttons">
+				<button v-if="showCropperConfirm" @click="confirmCrop">确认裁切</button>
+			</div>
 
 			<div class="user-info">
 				<label for="email">用户名：</label>
@@ -82,10 +86,12 @@
 </template>
 
 <script>
-import { ref, onMounted,reactive,inject } from "vue";
+import { ref, onMounted, reactive, inject } from "vue";
 import Sidebar from "../components/Sidebar.vue"; // 导入 Sidebar 组件
 import { useRouter } from "vue-router"; // 导入 Vue Router
 import axios from "../utils/axios";
+import Cropper from "cropperjs";
+import "cropperjs/dist/cropper.css";
 
 export default {
 	name: "UserEdit",
@@ -106,6 +112,8 @@ export default {
 
 		let avatar = ref();
 		const showAlert = inject("showAlert");
+		let cropper = null;
+		const showCropperConfirm = ref(false);
 
 		const fetchUserInfo = async () => {
 			const userId = localStorage.getItem("user_id");
@@ -147,31 +155,67 @@ export default {
 			fileInput.click();
 		};
 
-		// 处理头像更改
 		const handleAvatarChange = async (event) => {
 			const file = event.target.files[0];
 			if (file) {
 				const reader = new FileReader();
-				reader.onload = async () => {
-					const formData = {
-						userid: localStorage.getItem("user_id"),
-						url: reader.result,
+				reader.onload = (e) => {
+					const image = document.getElementById("cropper-image");
+					image.src = e.target.result;
+					image.onload = () => {
+						cropper = new Cropper(image, {
+							aspectRatio: 1,
+							viewMode: 1,
+							autoCropArea: 1,
+						});
+						showCropperConfirm.value = true;
 					};
-					
-					try {
-						const response = await axios.post("/api/user/updateimg", formData);
-						if (response.data.code === 1) {
-							avatar.value = response.data.data;
-							showAlert("头像已更新", true);
-						} else {
-							showAlert("头像更新失败", false);
-						}
-					} catch (error) {
-						showAlert("头像更新失败，请稍后再试！", false);
-					}
 				};
 				reader.readAsDataURL(file);
 			}
+		};
+
+		const confirmCrop = () => {
+			const canvas = cropper.getCroppedCanvas({
+				width: 500,
+				height: 500,
+			});
+			canvas.toBlob(async (blob) => {
+				const formData = new FormData();
+				formData.append("image", blob, "avatar.jpg");
+				try {
+					const response = await axios.post("/api/user/upload", formData, {
+						headers: {
+							"Content-Type": "multipart/form-data",
+						},
+					});
+
+					if (response.status === 200 && response.data.code === 1) {
+						avatar.value = response.data.data;
+						try {
+							const res = await axios.post("/api/user/updateimg", {
+								userid: localStorage.getItem("user_id"),
+								url: response.data.data,
+							});
+							if (res.status === 200 && res.data.code === 1) {
+								showAlert("头像已更新", true);
+							}
+						} catch (error) {
+							console.error("Failed to update avatar", error);
+						}
+						showAlert("头像已更新", true);
+					} else {
+						showAlert("头像更新失败", false);
+						console.error("Server response:", response.data);
+					}
+				} catch (error) {
+					showAlert("头像更新失败，请稍后再试！", false);
+					console.error("Failed to upload avatar", error);
+				}
+			}, "image/jpeg");
+			showCropperConfirm.value = false;
+			// 销毁裁切器
+			cropper.destroy();
 		};
 
 		// 保存用户信息
@@ -220,6 +264,8 @@ export default {
 			cancelEdit,
 			triggerFileInput,
 			handleAvatarChange,
+			confirmCrop,
+			showCropperConfirm,
 		};
 	},
 };
