@@ -102,7 +102,7 @@ export default {
 
 		const deleteAccount = async () => {
 			const password = prompt(
-				"请输入您的密码以确认注销账户，注意：注销账户后所有数据将被删除："
+				"请输入您的密码以确认注销账户，注意：注销账户后所有数据将被删除"
 			);
 			console.log(password);
 			
@@ -110,10 +110,9 @@ export default {
 				showAlert("密码不能为空！", false);
 				return;
 			}
-			// showAlert("账户已注销", true);
 			try {
 				const res = await axios.post("/api/user/delete", {
-					user_id: localStorage.getItem("uid"),
+					user_id: localStorage.getItem("user_id"),
 					password: password,
 				});
 				if (res.data.code === 1) {

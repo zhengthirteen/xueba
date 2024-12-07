@@ -1,7 +1,7 @@
 <template>
 	<div class="auth-container">
 		<h2>登录</h2>
-		<form @submit.prevent="handleLogin">
+		<form @submit.prevent="test_handleLogin">
 			<label for="identifier">用户名/邮箱/手机号:</label>
 			<input
 				v-model="identifier"
@@ -45,13 +45,6 @@ export default {
 		let t_id = null;
 
 		const test_handleLogin = () => {
-			// showConfirm("确认操作？", "操作成功！", true, (result) => {
-			// 	if (result === 1) {
-			// 		console.log("用户点击了确认");
-			// 	} else if (result === 2) {
-			// 		console.log("用户点击了取消");
-			// 	}
-			// });
 			if (t_id) clearTimeout(t_id);
 			t_id = setTimeout(() => {
 				if (identifier.value === "test001" && password.value === "123456") {
@@ -86,8 +79,8 @@ export default {
 					});
 					if (res.data.code === 1) {
 						showAlert("登录成功！", true);
-						console.log(res.data.data);
-						localStorage.setItem("token", res.data.data);
+						localStorage.setItem("token", res.data.data.jwt);
+						localStorage.setItem("user_id", res.data.data.user_id);
 						setTimeout(() => {
 							router.push("/");
 						}, 800);

@@ -13,7 +13,7 @@
 
 			<!-- 帖子列表 -->
 			<div class="posts-list">
-				<h2>我发表的帖子</h2>
+				<h2>发表过的帖子</h2>
 				<p v-if="posts.length === 0">暂无发表的帖子</p>
 				<!-- 帖子项列表 -->
 				<div
@@ -40,9 +40,9 @@
 </template>
 
 <script>
-import { ref, onMounted, inject } from 'vue';
+import { ref, onMounted, inject } from "vue";
 import Sidebar from "../components/Sidebar.vue";
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 //   export default {
 //   name: "PublishPage",
 //   data() {
@@ -100,89 +100,88 @@ import { useRouter } from 'vue-router';
 //   },
 // };
 export default {
-  name: "PublishPage",
-  components: {
-    Sidebar,
-  },
-  setup() {
-    // 注入 showAlert 方法
-    const showAlert = inject("showAlert");
-	const showConfirm = inject("showConfirm");
-    
-    // 定义响应式数据
-    const posts = ref([]);
-    
-    const router = useRouter();
+	name: "PublishPage",
+	components: {
+		Sidebar,
+	},
+	setup() {
+		// 注入 showAlert 方法
+		const showAlert = inject("showAlert");
+		const showConfirm = inject("showConfirm");
 
-    // 跳转到具体帖子页面
-    const goToPost = (postId) => {
-      router.push(`/post/${postId}`);
-    };
+		// 定义响应式数据
+		const posts = ref([]);
 
-    // 模拟从后端获取帖子数据
-    const fetchPosts = () => {
-      setTimeout(() => {
-        posts.value = [
-          { id: 1, title: "第一个帖子", hotness: 120, hidden: false },
-          { id: 2, title: "第二个帖子", hotness: 95, hidden: false },
-          { id: 3, title: "第三个帖子", hotness: 70, hidden: false },
-		  { id: 4, title: "第四个帖子", hotness: 120, hidden: false },
-          { id: 5, title: "第五个帖子", hotness: 95, hidden: false },
-          { id: 6, title: "第六个帖子", hotness: 70, hidden: false }
-        ];
-      }, 100); // 模拟1秒钟的延迟
-    };
+		const router = useRouter();
 
-    // 删除帖子
-	const deletePost = (postId) => {
-      // 使用 showAlert 代替 confirm 显示删除确认
-        if (showAlert) {
-        showConfirm("确认删除此帖子吗？","删除成功", true ,(confirmed) => {
-          if (confirmed) {
-            // 模拟删除操作
-            setTimeout(() => {
-              posts.value = posts.value.filter(post => post.id !== postId); // 从本地移除已删除的帖子
-            }, 500); // 模拟删除延迟
-          } else {
-            showAlert("删除操作已取消");
-          }
-        }).catch(() => {
-          console.error("showAlert 错误！");
-        });
-      } else {
-        console.error("showAlert 方法未定义！");
-      }
-    };
-    // 切换隐藏状态
-    const toggleHide = (postId) => {
-      const post = posts.value.find((post) => post.id === postId);
-      if (post) {
-        post.hidden = !post.hidden; // 切换隐藏状态
-        setTimeout(() => {
-          if (showAlert) {
-			if(post.hidden){
-				showAlert("帖子已隐藏！",false);
+		// 跳转到具体帖子页面
+		const goToPost = (postId) => {
+			router.push(`/post/${postId}`);
+		};
+
+		// 模拟从后端获取帖子数据
+		const fetchPosts = () => {
+			setTimeout(() => {
+				posts.value = [
+					{ id: 1, title: "第一个帖子", hotness: 120, hidden: false },
+					{ id: 2, title: "第二个帖子", hotness: 95, hidden: false },
+					{ id: 3, title: "第三个帖子", hotness: 70, hidden: false },
+					{ id: 4, title: "第四个帖子", hotness: 120, hidden: false },
+					{ id: 5, title: "第五个帖子", hotness: 95, hidden: false },
+					{ id: 6, title: "第六个帖子", hotness: 70, hidden: false },
+				];
+			}, 100); // 模拟1秒钟的延迟
+		};
+
+		// 删除帖子
+		const deletePost = (postId) => {
+			// 使用 showAlert 代替 confirm 显示删除确认
+			if (showAlert) {
+				showConfirm("确认删除此帖子吗？", "删除成功", true, (confirmed) => {
+					if (confirmed) {
+						// 模拟删除操作
+						setTimeout(() => {
+							posts.value = posts.value.filter((post) => post.id !== postId); // 从本地移除已删除的帖子
+						}, 500); // 模拟删除延迟
+					} else {
+						showAlert("删除操作已取消");
+					}
+				}).catch(() => {
+					console.error("showAlert 错误！");
+				});
+			} else {
+				console.error("showAlert 方法未定义！");
 			}
-			else{
-				showAlert("帖子已显示！",true);
+		};
+		// 切换隐藏状态
+		const toggleHide = (postId) => {
+			const post = posts.value.find((post) => post.id === postId);
+			if (post) {
+				post.hidden = !post.hidden; // 切换隐藏状态
+				setTimeout(() => {
+					if (showAlert) {
+						if (post.hidden) {
+							showAlert("帖子已隐藏！", false);
+						} else {
+							showAlert("帖子已显示！", true);
+						}
+					}
+				}, 500); // 模拟更新延迟
 			}
-          }
-        }, 500); // 模拟更新延迟
-      }
-    };
+		};
 
-    // 在组件加载时获取数据
-    onMounted(() => {
-      fetchPosts(); // 获取帖子数据
-    });
+		// 在组件加载时获取数据
+		onMounted(() => {
+			fetchPosts(); // 获取帖子数据
+		});
 
-    return {
-      posts,
-      goToPost,
-      deletePost,
-      toggleHide,
-    };
-  },
+		return {
+			posts,
+			goToPost,
+			deletePost,
+			toggleHide,
+		};
+	},
 };
 </script>
 
@@ -194,7 +193,7 @@ body {
 }
 /* 主容器 */
 .layout {
-  	display: flex;
+	display: flex;
 	height: 100vh;
 	margin: 0 auto;
 	width: 80vw;
@@ -236,16 +235,16 @@ body {
 /* 主内容区 */
 .main {
 	top: -10px;
-	flex-grow: 1; 
+	flex-grow: 1;
 	width: 80%;
 	padding: 20px;
 }
 
 /* 帖子列表样式 */
 .post-list {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
 }
 .post-item {
 	width: 100%; /* 确保占满全宽 */
@@ -296,27 +295,26 @@ p {
 	background-color: #0056b3;
 }
 h2 {
-  text-align: center; /* 将标题居中对齐 */
-  margin: 40px 0; /* 增加上下的外边距，让标题有更多空间 */
-  font-size: 36px; /* 增加字体大小，让标题更加显眼 */
-  font-weight: 700; /* 更粗的字体，增加视觉冲击力 */
-  letter-spacing: 2px; /* 字母间距，增加可读性 */
-  color: #333; /* 设置字体颜色 */
-  
-  /* 使用渐变背景 */
-  background: linear-gradient(to right, #FF7F50, #FFD700); 
-  -webkit-background-clip: text; /* WebKit内核浏览器支持 */
-  background-clip: text; /* 标准浏览器支持 */
-  color: transparent; /* 使文字颜色透明，展示渐变背景 */
+	text-align: center; /* 将标题居中对齐 */
+	margin: 40px 0; /* 增加上下的外边距，让标题有更多空间 */
+	font-size: 36px; /* 增加字体大小，让标题更加显眼 */
+	font-weight: 700; /* 更粗的字体，增加视觉冲击力 */
+	letter-spacing: 2px; /* 字母间距，增加可读性 */
+	color: #333; /* 设置字体颜色 */
 
-  /* 给文字添加阴影效果，使其更有层次感 */
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 0, 0, 0.2);
+	/* 使用渐变背景 */
+	background: linear-gradient(to right, #ff7f50, #ffd700);
+	-webkit-background-clip: text; /* WebKit内核浏览器支持 */
+	background-clip: text; /* 标准浏览器支持 */
+	color: transparent; /* 使文字颜色透明，展示渐变背景 */
 
-  /* 增加内边距 */
-  padding: 10px;
-  
-  /* 增加边框，给标题加点装饰 */
-  border-bottom: 2px solid #FFD700;
+	/* 给文字添加阴影效果，使其更有层次感 */
+	text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 0, 0, 0.2);
+
+	/* 增加内边距 */
+	padding: 10px;
+
+	/* 增加边框，给标题加点装饰 */
+	border-bottom: 2px solid #ffd700;
 }
-
 </style>

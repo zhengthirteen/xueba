@@ -87,7 +87,7 @@ export default {
 			}
 			try {
 				const res = await axios.post("/api/user/updatepd", {
-					uid: localStorage.getItem("uid"),
+					uid: localStorage.getItem("user_id"),
 					formerPd: currentPassword.value,
 					pwd: newPassword.value,
 				});
