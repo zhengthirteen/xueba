@@ -112,10 +112,27 @@ export default {
 	const showAlert = inject("showAlert");
     const router = useRouter();  // 获取 Vue Router 实例
 
-    const contacts = ref([
-      { name: 'Alice', messages: [{ text: 'Hi there!', time: '9:00', sender: 'other' }, { text: 'How are you?', time: '9:05', sender: 'other' }] },
-      { name: 'Bob', messages: [{ text: 'Hello!', time: '9:10', sender: 'other' }, { text: 'What\'s up?', time: '9:12', sender: 'other' }] },
-    ]);
+    const contacts = ref([]);
+
+    const fetchContacts = async () => {
+      const userID = localStorage.getItem("user_id");
+      try {
+        const response = await axios.post('/api/friend/allfriend', {
+          userID: parseInt(userID, 10)
+        });
+
+        contacts.value = response.data.data.map(contact => ({
+          name: contact.friendName,
+          messages: [], // 假设消息不在初始数据中
+        }));
+      } catch (error) {
+        console.error('获取联系人时出错:', error);
+        showAlert('获取联系人时出错'); // 使用 showAlert 抛出提示
+      }
+    };
+
+    // 调用 fetchContacts
+    fetchContacts();
 	const receivedRequests = ref([ // 收到的好友请求列表
   		{ name: 'Charlie', status: 'pending' }, // 假设有一些请求
   		{ name: 'David', status: 'pending' }
