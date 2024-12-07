@@ -64,8 +64,8 @@ export default {
 			];
 		};
 		onMounted(() => {
-			test_getTopics(); //测试用
-			// getTopics();//正式用
+			// test_getTopics(); //测试用
+			getTopics();//正式用
 		});
 
 		return {

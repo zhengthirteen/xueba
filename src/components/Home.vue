@@ -5,7 +5,6 @@
 			<SearchBar :onSearch="handleSearch" />
 			<div class="content">
 				<PopularTopics />
-				<PopularChannels />
 			</div>
 		</div>
 		<img
@@ -18,36 +17,37 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, inject, onMounted } from "vue";
 import PopularTopics from "./PopularTopics.vue";
-import PopularChannels from "./PopularChannels.vue";
 import { useUserProfile } from "../hooks/useUserProfile.js";
-import { useRouter } from "vue-router";
-import avatarImage from "../assets/logo.jpg";
 import SearchBar from "./SearchBar.vue";
 import Sidebar from "./Sidebar.vue";
+import axios from "../utils/axios";
+import { useUserAvatar } from "../hooks/useUserAvatar";
 
 export default {
 	name: "Home",
 	components: {
 		PopularTopics,
-		PopularChannels,
 		SearchBar,
-		Sidebar
+		Sidebar,
 	},
 	setup() {
 		const { user } = useUserProfile();
-		const router = useRouter();
-		const avatar = ref(avatarImage);
+		const router = inject("router");
+		const { avatar, getUserAvatar, test_getUserAvatar } = useUserAvatar();
 
 		const goToProfile = () => {
 			router.push("/profile");
 		};
 
 		const handleSearch = (query) => {
-      console.log("搜索内容:", query);
-      // 在这里处理搜索逻辑
-    };
+			console.log("搜索内容:", query);
+			// 在这里处理搜索逻辑
+		};
+		onMounted(() => {
+			getUserAvatar(localStorage.getItem("user_id"));
+		});
 
 		return { user, goToProfile, avatar, handleSearch };
 	},
@@ -84,7 +84,7 @@ export default {
 	opacity: 0.8;
 }
 .content {
-	width: 100%; 
+	width: 100%;
 	display: flex;
 	flex-direction: column;
 	margin-top: 50px;

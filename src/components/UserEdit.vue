@@ -18,7 +18,7 @@
 
 				<!-- 头像区域，鼠标悬停时会出现更换文字 -->
 				<div class="avatar-wrapper" @click="triggerFileInput">
-					<img :src="user.avatar" alt="用户头像" class="avatar" />
+					<img :src="avatar" alt="用户头像" class="avatar" />
 					<span class="change-text">更换</span>
 				</div>
 			</div>
@@ -27,7 +27,7 @@
 				<label for="email">用户名：</label>
 				<input
 					class="name"
-					v-model="user.name"
+					v-model="user.username"
 					type="text"
 					placeholder="用户名"
 				/>
@@ -46,28 +46,28 @@
 				<label for="email">邮箱：</label>
 				<input
 					id="email"
-					v-model="email"
+					v-model="user.email"
 					type="email"
 					placeholder="请输入邮箱"
 				/>
 				<label for="phone">手机号：</label>
 				<input
 					id="phone"
-					v-model="phone"
+					v-model="user.phone"
 					type="tel"
 					placeholder="请输入手机号"
 				/>
 				<label for="address">地址：</label>
 				<input
 					id="address"
-					v-model="address"
+					v-model="user.address"
 					type="text"
 					placeholder="请输入地址"
 				/>
 				<label for="school">学校：</label>
 				<input
 					id="school"
-					v-model="school"
+					v-model="user.school"
 					type="text"
 					placeholder="请输入学校"
 				/>
@@ -82,7 +82,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted,reactive,inject } from "vue";
 import Sidebar from "../components/Sidebar.vue"; // 导入 Sidebar 组件
 import { useRouter } from "vue-router"; // 导入 Vue Router
 import axios from "../utils/axios";
@@ -104,7 +104,8 @@ export default {
 			school: "",
 		});
 
-		let avatar = ref("src/assets/logo.jpg");
+		let avatar = ref();
+		const showAlert = inject("showAlert");
 
 		const fetchUserInfo = async () => {
 			const userId = localStorage.getItem("user_id");
@@ -129,7 +130,7 @@ export default {
 				const avatarResponse = await axios.get(`/api/user/getimg`, {
 					params: { userid: userId },
 				});
-				avatar.value = avatarResponse.data;
+				avatar.value = avatarResponse.data.data;
 			} catch (error) {
 				showAlert("获取用户信息失败", false);
 				console.error("Failed to fetch user info", error);
@@ -156,17 +157,16 @@ export default {
 						userid: localStorage.getItem("user_id"),
 						url: reader.result,
 					};
-
+					
 					try {
 						const response = await axios.post("/api/user/updateimg", formData);
 						if (response.data.code === 1) {
 							avatar.value = response.data.data;
 							showAlert("头像已更新", true);
 						} else {
-							showAlert("头像更新失败，请稍后再试！", false);
+							showAlert("头像更新失败", false);
 						}
 					} catch (error) {
-						console.error("头像更新失败", error);
 						showAlert("头像更新失败，请稍后再试！", false);
 					}
 				};

@@ -1,7 +1,7 @@
 <template>
 	<div class="auth-container">
 		<h2>登录</h2>
-		<form @submit.prevent="test_handleLogin">
+		<form @submit.prevent="handleLogin">
 			<label for="identifier">用户名/邮箱/手机号:</label>
 			<input
 				v-model="identifier"

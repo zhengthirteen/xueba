@@ -62,6 +62,7 @@ import { computed, inject, onMounted, ref, reactive } from "vue";
 import axios from "../utils/axios";
 import { useUserProfile } from "../hooks/useUserProfile.js";
 import Sidebar from "../components/Sidebar.vue"; // 导入 Sidebar 组件
+import { useUserAvatar } from "../hooks/useUserAvatar";
 
 export default {
 	name: "UserProfile",
@@ -70,7 +71,7 @@ export default {
 	},
 	setup() {
 		const user = reactive({});
-		let avatar = ref("src/assets/logo.jpg");
+		const { avatar, getUserAvatar,test_getUserAvatar } = useUserAvatar();
 		const { editProfile } = useUserProfile();
 		const router = inject("router");
 		const showAlert = inject("showAlert");
@@ -97,17 +98,9 @@ export default {
 			}
 
 			try {
-				const res = await axios.get("/api/user/getimg", {
-					params: { userid: localStorage.getItem("user_id") },
-				});
-				if (res.data.code === 1) {
-					avatar.value = res.data.data;
-				} else {
-					showAlert("获取用户头像失败，请稍后再试！", false);
-				}
+				await getUserAvatar(localStorage.getItem("user_id"));
 			} catch (err) {
-				console.log(err);
-				showAlert("获取用户头像失败，请稍后再试！", false);
+				showAlert("获取用户头像失败", false);
 			}
 		};
 
@@ -119,7 +112,7 @@ export default {
 			user.phone = "12345678901";
 			user.address = "测试地址";
 			user.school = "测试学校";
-			avatar.value = "src/assets/logo.jpg";
+			test_getUserAvatar();
 		}
 
 		onMounted(() => {

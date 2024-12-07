@@ -98,6 +98,7 @@
 import { ref, nextTick, computed,inject } from 'vue';
 import Sidebar from "../components/Sidebar.vue";
 import { useRouter } from 'vue-router';  // 使用 Vue Router 进行页面跳转
+import axios from '../utils/axios';
 
 export default {
   name: 'ChatApp',

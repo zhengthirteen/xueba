@@ -1,0 +1,33 @@
+// src/hooks/useUserAvatar.js
+import { ref, inject } from "vue";
+import axios from "../utils/axios";
+
+export function useUserAvatar() {
+	const avatar = ref();
+	const showAlert = inject("showAlert");
+
+	const getUserAvatar = async (userId) => {
+		try {
+			const res = await axios.get("/api/user/getimg", {
+				params: { userid: userId },
+			});
+			if (res.data.code === 1) {
+				avatar.value = res.data.data;
+			} else {
+				showAlert("获取用户头像失败，请稍后再试！", false);
+			}
+		} catch (err) {
+			console.error(err);
+			showAlert("获取用户头像失败，请稍后再试！", false);
+		}
+  };
+  const test_getUserAvatar = () => {
+    avatar.value = "src/assets/logo.jpg";
+  }
+
+	return {
+		avatar,
+    getUserAvatar,
+    test_getUserAvatar,
+	};
+}
