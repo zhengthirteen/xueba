@@ -48,9 +48,10 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, inject } from "vue";
+import { ref, computed, onMounted, inject, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router"; // 导入 Vue Router
 import Sidebar from "../components/Sidebar.vue"; // 导入 Sidebar 组件
+import axios from '../utils/axios'; // 导入 axios
 
 export default {
   name: "ContactDetail",
@@ -64,57 +65,68 @@ export default {
     const route = useRoute();
 
     // 用户数据的响应式引用
-    const user = ref({
+    const user = reactive({
       name: "",
-      bio: "",
-      avatar: "",
       status: "",
       gender: "",
+      email: "",
+      phone: "",
+      address: "",
+      school: "",
     });
 
-    // 用户的其他信息
-    const email = ref("");
-    const phone = ref("");
-    const address = ref("");
-    const school = ref("");
+    // 用户头像的单独引用
+    const avatar = ref("");
 
-    // 从路由参数获取用户ID（假设你通过路由参数传递）
-    const userId = "1";
+    // 从路由参数获取用户ID
+    const userId = route.params.id;
 
-    // 模拟获取用户数据的函数
-    const fetchUserData = () => {
-      // 这里模拟从后端获取用户信息
-      // 根据 userId 模拟请求返回不同的用户信息
-      if (userId === "1") {
-        user.value = {
-          name: "张三",
-          bio: "这是张三的个人简介。",
-          avatar: "https://via.placeholder.com/100",
-          status: "在线",
-          gender: "男",
-        };
-        email.value = "user1@example.com";
-        phone.value = "+1 234 567 890";
-        address.value = "1234 Elm Street, Springfield, IL";
-        school.value = "Springfield University";
-      } else if (userId === "2") {
-        user.value = {
-          name: "李四",
-          bio: "这是李四的个人简介。",
-          avatar: "https://via.placeholder.com/100",
-          status: "忙碌",
-          gender: "女",
-        };
-        email.value = "user2@example.com";
-        phone.value = "+1 234 567 891";
-        address.value = "5678 Oak Avenue, Springfield, IL";
-        school.value = "Greenwood College";
+    // 获取用户数据的函数
+    const fetchUserData = async () => {
+      try {
+        const userInfoResponse = await axios.get('/api/user/getinfo', {
+          params: { userid: userId }
+        });
+
+        if (userInfoResponse.data.code === 1) {
+          const data = userInfoResponse.data.data;
+          user.name = data.username;
+          user.status = data.status || ""; // 假设没有 status 信息
+          user.gender = data.gender === 1 ? "男" : "女";
+          user.email = data.email;
+          user.phone = data.phone;
+          user.address = data.address;
+          user.school = data.school;
+        } else {
+          showAlert(userInfoResponse.data.msg);
+        }
+      } catch (error) {
+        console.error('获取用户信息时出错:', error);
+        showAlert('获取用户信息时出错');
+      }
+    };
+
+    // 获取用户头像的函数
+    const fetchUserAvatar = async () => {
+      try {
+        const userAvatarResponse = await axios.get('/api/user/getimg', {
+          params: { userid: userId }
+        });
+
+        if (userAvatarResponse.data.code === 1) {
+          avatar.value = userAvatarResponse.data.data;
+        } else {
+          showAlert(userAvatarResponse.data.msg);
+        }
+      } catch (error) {
+        console.error('获取用户头像时出错:', error);
+        showAlert('获取用户头像时出错');
       }
     };
 
     // 计算用户状态的 CSS 类
     const statusClass = computed(() => {
-      switch (user.value.status) {
+      switch (user.status) {
         case "在线":
           return "online";
         case "忙碌":
@@ -128,9 +140,24 @@ export default {
 
     // 删除好友的逻辑
     const confirmDelete = () => {
-      showConfirm("您确定要删除这个好友吗？", "好友已删除", true, (confirmed) => {
+      showConfirm("您确定要删除这个好友吗？", "好友已删除", true, async (confirmed) => {
         if (confirmed) {
-          router.push("/contacts"); // 假设跳转回联系人列表页面
+          try {
+            const response = await axios.post('/api/friend/deletefriend', {
+              relationID: userId, // 假设 userId 是好友关系ID
+              relationStatus: 3
+            });
+
+            if (response.data.code === 1) {
+              showAlert(response.data.msg);
+              router.push("/contacts"); // 假设跳转回联系人列表页面
+            } else {
+              showAlert(response.data.msg);
+            }
+          } catch (error) {
+            console.error('删除好友时出错:', error);
+            showAlert('删除好友时出错');
+          }
         }
       });
     };
@@ -143,20 +170,18 @@ export default {
     // 查找聊天记录
     const findChat = () => {
       // 跳转到聊天记录页面并传递用户ID和用户名
-      router.push(`/chat-history/${userId}/${user.value.name}`);
+      router.push(`/chat-history/${userId}/${user.name}`);
     }
 
     // 在组件挂载时调用数据加载函数
     onMounted(() => {
       fetchUserData();
+      fetchUserAvatar();
     });
 
     return {
       user,
-      email,
-      phone,
-      address,
-      school,
+      avatar,
       statusClass,
       editProfile,
       findChat,
