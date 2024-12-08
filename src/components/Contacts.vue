@@ -115,16 +115,19 @@ export default {
 
     const contacts = ref([]);
 
+    // 获取好友列表的函数
     const fetchContacts = async () => {
-      const userID = localStorage.getItem("user_id");
+      const userID = localStorage.getItem("user_id"); // 从本地存储中获取用户ID
       try {
+        // 发送请求到服务器获取好友列表
         const response = await axios.post('/api/friend/allfriend', {
           userID: parseInt(userID, 10)
         });
 
+        // 将服务器返回的好友数据映射到 contacts 列表中
         contacts.value = response.data.data.map(contact => ({
-          name: contact.friendName,
-          friendID: contact.friendID, // 添加 friendID
+          name: contact.friendName, // 好友名称
+          friendID: contact.friendID, // 好友ID
           messages: [], // 假设消息不在初始数据中
         }));
       } catch (error) {
@@ -133,7 +136,7 @@ export default {
       }
     };
 
-    // 调用 fetchContacts
+    // 调用 fetchContacts 函数获取好友列表
     fetchContacts();
 
     const receivedRequests = ref([]);
@@ -157,7 +160,7 @@ export default {
       }
     };
 
-    // 调用 fetchReceivedRequests
+    // 调用 fetchReceivedRequests 函数获取收到的好友请求
     fetchReceivedRequests();
 
     const selectedContactsForGroupChat = ref([]);
@@ -166,15 +169,18 @@ export default {
     const isReceivedRequestsDialogOpen = ref(false); // 控制“收到申请”对话框的显示状态
     const isMenuVisible = ref(false);
 
+    // 计算属性，返回过滤后的联系人列表
     const filteredContacts = computed(() => {
       return contacts.value.filter(contact => contact.name.toLowerCase().includes(searchQuery.value.toLowerCase()));
     });
 
+    // 选择联系人并获取该联系人的消息
     const selectContact = async (contact) => {
       selectedContact.value = contact;
       await fetchMessages(contact.friendID);
     };
 
+    // 发送消息
     const sendMessage = async () => {
       if (newMessage.value.trim() && selectedContact.value) {
         const userID = parseInt(localStorage.getItem("user_id"), 10);
@@ -212,6 +218,7 @@ export default {
       }
     };
 
+    // 获取指定联系人的消息
     const fetchMessages = async (friendID) => {
       const userID = parseInt(localStorage.getItem("user_id"), 10);
       try {
