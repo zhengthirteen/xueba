@@ -43,7 +43,7 @@
 import { ref, onMounted, inject } from "vue";
 import Sidebar from "../components/Sidebar.vue";
 import { useRouter } from "vue-router";
-import axios from "axios";
+import axios from "../utils/axios";
 
 export default {
     name: "PublishPage",
@@ -192,6 +192,13 @@ body {
     padding: 0;
     margin: 0;
 }
+.posts-list h2{
+    color: gray;
+}
+.posts-list p{
+    font-size: 25px;
+    font-weight: 600;
+}
 .post-item {
     width: 100%; /* 确保占满全宽 */
     background-color: #f9f9f9;
@@ -261,6 +268,6 @@ h2 {
     padding: 10px;
 
     /* 增加边框，给标题加点装饰 */
-    border-bottom: 2px solid #ffd700;
+    border-bottom: 2px solid grey;
 }
 </style>

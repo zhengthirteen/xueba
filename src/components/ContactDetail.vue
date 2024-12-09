@@ -6,7 +6,7 @@
     <div class="main">
       <!-- 用户资料展示部分 -->
       <div class="user-profile">
-        <img :src="user.avatar" alt="用户头像" />
+        <img :src="avatar" alt="用户头像" />
         <div class="user-info">
           <h2>{{ user.name }}</h2>
           <p>{{ user.bio }}</p>
@@ -17,22 +17,22 @@
 
       <!-- 邮箱信息显示部分 -->
       <div class="user-email">
-        <p><strong>邮箱：</strong>{{ email }}</p>
+        <p><strong>邮箱：</strong>{{ user.email }}</p>
       </div>
 
       <!-- 新增手机号信息 -->
       <div class="user-phone">
-        <p><strong>手机号：</strong>{{ phone }}</p>
+        <p><strong>手机号：</strong>{{ user.phone }}</p>
       </div>
 
       <!-- 新增地址信息 -->
       <div class="user-address">
-        <p><strong>地址：</strong>{{ address }}</p>
+        <p><strong>地址：</strong>{{ user.address }}</p>
       </div>
 
       <!-- 新增学校信息 -->
       <div class="user-school">
-        <p><strong>学校：</strong>{{ school }}</p>
+        <p><strong>学校：</strong>{{ user.school }}</p>
       </div>
 
       <!-- 退出/切换账号按钮 -->
