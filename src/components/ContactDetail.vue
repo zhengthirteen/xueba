@@ -43,7 +43,21 @@
     
     <!-- 返回按钮 -->
     <button class="back-btn" @click="editProfile">返回</button>
-    <button class="find-chat-btn" @click="findChat">查找聊天记录</button>
+    <button class="find-chat-btn" @click="showChatHistory">查找聊天记录</button>
+
+    <!-- 聊天记录弹窗 -->
+    <div v-if="showChatModal" class="chat-modal">
+      <div class="chat-modal-content">
+        <span class="close" @click="closeChatModal">&times;</span>
+        <h2>聊天记录</h2>
+        <input type="text" v-model="searchQuery" placeholder="搜索聊天记录" />
+        <div class="chat-history">
+          <div v-for="message in filteredMessages" :key="message.msgID" class="chat-message">
+            <p><strong>{{ message.msgTime }}</strong>: {{ message.msgContent }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -80,6 +94,11 @@ export default {
 
     // 从路由参数获取用户ID
     const userId = route.params.id;
+
+    // 聊天记录相关状态
+    const showChatModal = ref(false);
+    const chatMessages = ref([]);
+    const searchQuery = ref("");
 
     // 获取用户数据的函数
     const fetchUserData = async () => {
@@ -167,11 +186,38 @@ export default {
       router.push(`/contacts`);
     };
     
-    // 查找聊天记录
-    const findChat = () => {
-      // 跳转到聊天记录页面并传递用户ID和用户名
-      router.push(`/chat-history/${userId}/${user.name}`);
-    }
+    // 显示聊天记录弹窗
+    const showChatHistory = async () => {
+      const userID = parseInt(localStorage.getItem("user_id"));
+      try {
+        const response = await axios.post('/api/friend/getmessage', {
+          userID: userID,
+          friendID: userId
+        });
+
+        if (response.data.code === 1) {
+          chatMessages.value = response.data.data;
+          showChatModal.value = true;
+        } else {
+          showAlert(response.data.msg);
+        }
+      } catch (error) {
+        console.error('获取聊天记录时出错:', error);
+        showAlert('获取聊天记录时出错');
+      }
+    };
+
+    // 关闭聊天记录弹窗
+    const closeChatModal = () => {
+      showChatModal.value = false;
+    };
+
+    // 过滤聊天记录
+    const filteredMessages = computed(() => {
+      return chatMessages.value.filter(message =>
+        message.msgContent.includes(searchQuery.value)
+      );
+    });
 
     // 在组件挂载时调用数据加载函数
     onMounted(() => {
@@ -184,8 +230,12 @@ export default {
       avatar,
       statusClass,
       editProfile,
-      findChat,
+      showChatHistory,
       confirmDelete,
+      showChatModal,
+      closeChatModal,
+      searchQuery,
+      filteredMessages,
     };
   },
 };
@@ -349,5 +399,63 @@ body {
 .find-chat-btn:hover {
   background-color: #0056b3;
   box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 聊天记录弹窗样式 */
+.chat-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.chat-modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 60%;
+  max-height: 80%;
+  overflow-y: auto;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.chat-modal-content .close {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.chat-modal-content h2 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.chat-modal-content input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.chat-history {
+  margin-top: 20px;
+}
+
+.chat-message {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.chat-message p {
+  margin: 0;
 }
 </style>
