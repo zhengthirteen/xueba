@@ -19,10 +19,22 @@
 					<h2>{{ user.username }}</h2>
 					<p>
 						<strong>状态：</strong>
-						<span :class="statusClass">{{ user.status }}</span>
+						<span :class="statusClass">{{
+							user.status === 0
+								? "在线"
+								: user.status === 1
+								? "隐身"
+								: user.status === 2
+								? "忙碌"
+								: ";离线"
+						}}</span>
 					</p>
 					<!-- 显示性别 -->
-					<p><strong>性别：</strong>{{ user.gender === 1 ? "男" : "女" }}</p>
+					<p>
+						<strong>性别：</strong
+						>{{ user.gender === 1 ? "男" : user.gender === 2 ? "女" : "保密" }}
+					</p>
+					<p><strong>用户id：</strong>{{ user.id }}</p>
 				</div>
 				<button @click="editProfile">编辑</button>
 			</div>
@@ -71,7 +83,7 @@ export default {
 	},
 	setup() {
 		const user = reactive({});
-		const { avatar, getUserAvatar,test_getUserAvatar } = useUserAvatar();
+		const { avatar, getUserAvatar, test_getUserAvatar } = useUserAvatar();
 		const { editProfile } = useUserProfile();
 		const router = inject("router");
 		const showAlert = inject("showAlert");
@@ -83,12 +95,14 @@ export default {
 				});
 				if (res.data.code === 1) {
 					user.username = res.data.data.username;
-					user.status = res.data.data.status;
+					user.status = res.data.data.onlineStatus;
 					user.gender = res.data.data.gender;
 					user.email = res.data.data.email;
 					user.phone = res.data.data.phone;
 					user.address = res.data.data.address;
 					user.school = res.data.data.school;
+					user.id = res.data.data.userId;
+					console.log(user);
 				} else {
 					showAlert("获取用户信息失败，请稍后再试！", false);
 				}
@@ -123,12 +137,14 @@ export default {
 		// 动态类绑定，根据用户状态返回对应的 CSS 类
 		const statusClass = computed(() => {
 			switch (user.status) {
-				case "在线":
+				case 0:
 					return "online";
-				case "忙碌":
-					return "busy";
-				case "隐身":
+				case 1:
 					return "away";
+				case 2:
+					return "busy";
+				case 3:
+					return "offline";
 				default:
 					return "";
 			}

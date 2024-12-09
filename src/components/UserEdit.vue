@@ -43,9 +43,9 @@
 				</select>
 				<label for="status">状态：</label>
 				<select id="status" v-model="user.status">
-					<option value="在线">在线</option>
-					<option value="忙碌">忙碌</option>
-					<option value="隐身">隐身</option>
+					<option value="0">在线</option>
+					<option value="2">忙碌</option>
+					<option value="1">隐身</option>
 				</select>
 				<label for="email">邮箱：</label>
 				<input
@@ -229,8 +229,8 @@ export default {
 				uid: localStorage.getItem("user_id"),
 				info: {
 					username: user.username,
-					gender: user.gender === "男" ? 1 : 0,
-					status: user.status,
+					gender: user.gender === "男" ? 1 : user.gender === "女" ? 2 : 0,
+					onlineStatus: user.status,
 					email: user.email,
 					phone: user.phone,
 					address: user.address,
