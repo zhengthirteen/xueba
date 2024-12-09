@@ -4,14 +4,6 @@
     <Sidebar />
     <!-- 主内容区 -->
     <div class="main">
-      <!-- 导航栏 -->
-      <nav class="navbar">
-        <ul>
-          <li><router-link to="/profile">我的</router-link></li>
-          <li><router-link to="/publish">发布帖子</router-link></li>
-          <li><router-link to="/favorites">收藏夹</router-link></li>
-        </ul>
-      </nav>
       <!-- 帖子发布区域 -->
       <div class="post-editor">
         <h2>发布新帖子</h2>
@@ -31,10 +23,6 @@
               <img src="@/fig/picture.png" alt="插入图片" />
               <span>图片</span>
             </button>
-            <button type="button" @click="toggleVideoLink">
-              <img src="@/fig/video.png" alt="插入视频" />
-              <span>视频</span>
-            </button>
             <button type="button" @click="toggleEmojiPicker">
               <img src="@/fig/smile.png" alt="插入表情" />
               <span>表情</span>
@@ -44,12 +32,6 @@
           <!-- 图片上传功能 -->
           <div v-if="isImageUploadVisible" class="image-upload">
             <input type="file" @change="handleImageUpload" />
-          </div>
-
-          <!-- 视频插入功能 -->
-          <div v-if="isVideoLinkVisible" class="video-link">
-            <input type="text" v-model="videoUrl" placeholder="粘贴视频链接" />
-            <button type="button" @click="insertVideo">插入视频</button>
           </div>
 
           <!-- 表情选择功能 -->
@@ -72,10 +54,10 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, inject } from "vue";
 import { useRouter } from "vue-router";
 import Sidebar from "../components/Sidebar.vue"; // 导入 Sidebar 组件
-import { usePost } from "../hooks/usePost.js"; // 假设你有一个 hooks 用于处理发布逻辑
+import axios from "axios"; // 导入 axios
 
 export default {
   name: "PostEditor",
@@ -86,37 +68,45 @@ export default {
     const router = useRouter();
     const postTitle = ref("");
     const postContent = ref("");
-    const videoUrl = ref("");
+    const userID = localStorage.getItem("user_id"); // 从 localStorage 获取用户ID
+    const showAlert = inject("showAlert"); // 使用 inject 获取 showAlert 函数
     
     // 控制显示/隐藏各个功能区域
     const isImageUploadVisible = ref(false);
-    const isVideoLinkVisible = ref(false);
     const isEmojiPickerVisible = ref(false);
-
-    const { createPost } = usePost(); // 假设你有一个自定义 hook 用于处理帖子发布
+    const imageUrl = ref(""); // 存储图片URL
 
     // 发布帖子函数
     const submitPost = async () => {
       try {
-        await createPost(postTitle.value, postContent.value);
-        alert("帖子发布成功！");
-        router.push("/"); // 发布成功后跳转到主页或其他页面
+        const response = await axios.post("/api/post/publishpost", {
+          pdto: {
+            userID: userID,
+            postTitle: postTitle.value
+          },
+          mdto: {
+            content: postContent.value,
+            userID: userID
+          },
+          picdto: {
+            url: imageUrl.value || ""
+          }
+        });
+
+        if (response.data.code === 1) {
+          showAlert("帖子发布成功！");
+          router.push("/"); // 发布成功后跳转到主页或其他页面
+        } else {
+          showAlert("发布失败，请稍后再试！");
+        }
       } catch (error) {
-        alert("发布失败，请稍后再试！");
+        showAlert("发布失败，请稍后再试！");
       }
     };
 
     // 控制图片上传显示
     const toggleImageUpload = () => {
       isImageUploadVisible.value = !isImageUploadVisible.value;
-      isVideoLinkVisible.value = false; // 关闭视频链接输入框
-      isEmojiPickerVisible.value = false; // 关闭表情选择框
-    };
-
-    // 控制视频链接输入框显示
-    const toggleVideoLink = () => {
-      isVideoLinkVisible.value = !isVideoLinkVisible.value;
-      isImageUploadVisible.value = false; // 关闭图片上传框
       isEmojiPickerVisible.value = false; // 关闭表情选择框
     };
 
@@ -124,7 +114,6 @@ export default {
     const toggleEmojiPicker = () => {
       isEmojiPickerVisible.value = !isEmojiPickerVisible.value;
       isImageUploadVisible.value = false; // 关闭图片上传框
-      isVideoLinkVisible.value = false; // 关闭视频链接输入框
     };
 
     // 处理图片上传
@@ -133,18 +122,10 @@ export default {
       if (file) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          const imageUrl = e.target.result;
-          postContent.value += `<img src="${imageUrl}" alt="插入的图片" />`;
+          imageUrl.value = e.target.result;
+          postContent.value += `<img src="${imageUrl.value}" alt="插入的图片" />`;
         };
         reader.readAsDataURL(file); // 转换图片为 base64 格式并插入
-      }
-    };
-
-    // 插入视频链接
-    const insertVideo = () => {
-      if (videoUrl.value) {
-        postContent.value += `<video controls><source src="${videoUrl.value}" type="video/mp4">您的浏览器不支持该视频格式。</video>`;
-        videoUrl.value = ''; // 清空视频链接输入框
       }
     };
 
@@ -158,14 +139,10 @@ export default {
       postContent,
       submitPost,
       toggleImageUpload,
-      toggleVideoLink,
       toggleEmojiPicker,
       isImageUploadVisible,
-      isVideoLinkVisible,
       isEmojiPickerVisible,
       handleImageUpload,
-      videoUrl,
-      insertVideo,
       insertEmoji,
     };
   },
@@ -179,39 +156,6 @@ export default {
   margin: 0 auto;
   width: 75vw;
   margin-left: 10vw;
-}
-
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 180px;
-  width: calc(100% - 180px);
-  background-color: #333;
-  padding: 10px 0;
-  text-align: center;
-  font-size: 18px;
-  z-index: 10;
-}
-
-.navbar ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-}
-
-.navbar li {
-  margin: 0 15px;
-}
-
-.navbar a {
-  color: white;
-  text-decoration: none;
-}
-
-.navbar a:hover {
-  text-decoration: underline;
 }
 
 .main {
@@ -286,7 +230,6 @@ button[type="button"] {
 }
 
 .image-upload,
-.video-link,
 .emoji-picker {
   margin-top: 15px;
 }
@@ -336,10 +279,6 @@ button[type="button"] {
   .main {
     position: relative;
     top: 0;
-    width: 100%;
-  }
-
-  .navbar {
     width: 100%;
   }
 

@@ -4,21 +4,11 @@
     <Sidebar />
     <!-- 主内容区 -->
     <div class="main">
-      <!-- 导航栏 -->
-      <nav class="navbar">
-        <ul>
-          <li><router-link to="/profile">我的</router-link></li>
-          <li><router-link to="/publish">发布帖子</router-link></li>
-          <li><router-link to="/favorites">收藏夹</router-link></li>
-        </ul>
-      </nav>
-      
       <!-- 帖子详情区域 -->
       <div class="post-detail">
         <div class="post-header">
-          <h2>{{ post.title }}</h2>
-          <p class="author">发布者：{{ post.author }}</p>
-          <p class="date">发布于：{{ post.date }}</p>
+          <h2>{{ post.postDTO.postTitle }}</h2>
+          <p class="date">发布于：{{ post.postDTO.createTime }}</p>
         </div>
         
         <div class="post-content">
@@ -48,6 +38,7 @@
 <script>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import axios from '../utils/axios';
 import Sidebar from '../components/Sidebar.vue'; // 导入 Sidebar 组件
 import { usePostActions } from '../hooks/usePostActions'; // 导入自定义 hook
 
@@ -58,26 +49,30 @@ export default {
   },
   setup() {
     const router = useRouter();
-    
-    // 模拟帖子数据
-    const post = ref({
-      title: "帖子标题",
-      content: "这是帖子内容。这里可以写一些文本，介绍帖子内容。",
-      author: "作者名字",
-      date: "2024-11-30",
+    const post = ref({});
+    const postID = router.currentRoute.value.query.postID;
+    const showAlert = inject("showAlert");
+
+    const fetchPostDetails = async () => {
+      try {
+        const response = await axios.get('/api/source/postAll', {
+          params: { postID }
+        });
+        if (response.data.code === 1) {
+          post.value = response.data.data;
+        } else {
+          showAlert(`获取帖子详情失败: ${response.data.msg}`, false);
+        }
+      } catch (error) {
+        showAlert("获取帖子详情失败，请稍后重试！", false);
+      }
+    };
+
+    onMounted(() => {
+      fetchPostDetails();
     });
 
-    // 使用 usePostActions hook 来管理点赞、收藏、转发功能
-    const { 
-      isLiked, 
-      likeImage,
-      isFavorited, 
-      favoriteImage,
-      shareMessage, 
-      toggleLike, 
-      toggleFavorite, 
-      sharePost 
-    } = usePostActions();
+    const { isLiked, likeImage, isFavorited, favoriteImage, shareMessage, toggleLike, toggleFavorite, sharePost } = usePostActions(post);
 
     return {
       post,
@@ -94,7 +89,6 @@ export default {
 };
 </script>
 
-
 <style scoped>
 .layout {
   display: flex;
@@ -102,39 +96,6 @@ export default {
   margin: 0 auto;
   width: 75vw;
   margin-left: 10vw;
-}
-
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 180px;
-  width: calc(100% - 180px);
-  background-color: #333;
-  padding: 10px 0;
-  text-align: center;
-  font-size: 18px;
-  z-index: 10;
-}
-
-.navbar ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-}
-
-.navbar li {
-  margin: 0 15px;
-}
-
-.navbar a {
-  color: white;
-  text-decoration: none;
-}
-
-.navbar a:hover {
-  text-decoration: underline;
 }
 
 .main {
@@ -191,8 +152,6 @@ button img {
   width: 30px;
   height: 30px;
 }
-
-
 
 .share-message {
   margin-top: 20px;

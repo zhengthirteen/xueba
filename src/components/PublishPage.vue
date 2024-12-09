@@ -88,13 +88,19 @@ export default {
                 showConfirm("确认删除此帖子吗？", "删除成功", true, async (confirmed) => {
                     if (confirmed) {
                         try {
-                            await axios.post('/api/post/deletepost', null, {
+                            const userID = localStorage.getItem("user_id");
+                            const res = await axios.post('/api/post/deletepost', null, {
                                 params: {
-                                    postid: postId
+                                    userID: userID,
+                                    postID: postId
                                 }
                             });
-                            posts.value = posts.value.filter((post) => post.id !== postId);
-                            showAlert("删除成功");
+                            if (res.data.code === 1) {
+                                posts.value = posts.value.filter((post) => post.id !== postId);
+                                showAlert("删除成功");
+                            } else {
+                                showAlert("删除失败，请稍后重试");
+                            }
                         } catch (error) {
                             showAlert("删除失败，请稍后重试");
                         }

@@ -21,9 +21,9 @@
 					<li v-for="post in posts" :key="post.id" @click="goToPost(post.id)">
 						<h3>{{ post.title }}</h3>
 						<p>热度：{{ post.hotness }}</p>
-						<!-- 删除按钮 -->
+						<!-- 取消收藏按钮 -->
 						<div class="post-actions">
-							<button @click.stop="deletePost(post.id)">删除</button>
+							<button @click.stop="deletePost(post.id)">取消收藏</button>
 						</div>
 					</li>
 				</ul>
@@ -79,24 +79,25 @@ export default {
 		const deletePost = (postId) => {
 			if (showAlert) {
 				showConfirm(
-					"确认删除此帖子吗？",
-					"删除成功",
+					"确认取消收藏此帖子吗？",
+					"取消收藏成功",
 					true,
 					async (confirmed) => {
 						if (confirmed) {
 							try {
-								await axios.post("/api/post/deletefavorite", null, {
+								await axios.post("/api/post/canclefavorite", null, {
 									params: {
-										postid: postId,
+										userID: localStorage.getItem("user_id"),
+										postID: postId,
 									},
 								});
 								posts.value = posts.value.filter((post) => post.id !== postId);
-								showAlert("删除成功");
+								showAlert("取消收藏成功");
 							} catch (error) {
-								showAlert("删除失败，请稍后重试");
+								showAlert("取消收藏失败，请稍后重试");
 							}
 						} else {
-							showAlert("删除操作已取消");
+							showAlert("取消收藏操作已取消");
 						}
 					}
 				);
