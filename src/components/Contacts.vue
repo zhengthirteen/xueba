@@ -124,7 +124,7 @@
 </template>
 
 <script>
-import { ref, nextTick, computed, inject } from "vue";
+import { ref, nextTick, computed, inject, onMounted, onUnmounted } from "vue";
 import Sidebar from "../components/Sidebar.vue";
 import { useRouter } from "vue-router"; // 使用 Vue Router 进行页面跳转
 import axios from "../utils/axios";
@@ -143,6 +143,8 @@ export default {
 		const router = useRouter(); // 获取 Vue Router 实例
 
 		const contacts = ref([]);
+		let intervalID;
+
 
 		// 获取好友列表的函数
 		const fetchContacts = async () => {
@@ -303,8 +305,12 @@ export default {
 		const goToDetailPage = (contact) => {
 			// 跳转到联系人详细信息页面，并传递联系人的id
 			// console.log(contact);
+			console.log(contact.relationID);
 
-			router.push({ name: "contact-detail", params: { id: contact.friendID } });
+			router.push({
+				name: "contact-detail",
+				params: { id: contact.friendID, relationID: contact.relationID },
+			});
 		};
 
 		// 显示和隐藏菜单
@@ -405,10 +411,11 @@ export default {
 			const handleRequest = {
 				relationID: request.relationID,
 				relationStatus: 1, // 成为好友
-				userID: userID,
-				friendID: request.friendID,
+				userID: request.friendID,
+				friendID: userID,
 			};
-			// console.log(request);
+			console.log("requese", request);
+			console.log("handle", handleRequest);
 
 			try {
 				const response = await axios.post(
@@ -467,9 +474,11 @@ export default {
 			const handleRequest = {
 				relationID: request.relationID,
 				relationStatus: 2, // 拒绝申请
-				userID: userID,
-				friendID: request.friendID,
+				userID: request.friendID,
+				friendID: userID,
 			};
+			console.log("requese", request);
+			console.log("handle", handleRequest);
 
 			try {
 				const response = await axios.post(
@@ -495,6 +504,17 @@ export default {
 				);
 			}
 		};
+		onMounted(() => {
+        intervalID = setInterval(() => {
+            if (selectedContact.value) {
+                fetchMessages(selectedContact.value.friendID);
+            }
+        }, 100);
+		});
+		onUnmounted(() => {
+        clearInterval(intervalID);
+    });
+
 
 		return {
 			newMessage,

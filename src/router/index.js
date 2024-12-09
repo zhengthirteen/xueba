@@ -24,7 +24,7 @@ const routes = [
 	{ path: "/post", name: "PostEditor", component: PostEditor },
 	{ path: "/profile", name: "UserProfile", component: UserProfile },
 	{
-		path: "/contact/:id",
+		path: "/contact/:id/:relationID",
 		name: "contact-detail",
 		component: ContactDetail,
 		props: true,

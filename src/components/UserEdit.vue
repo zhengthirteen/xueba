@@ -37,15 +37,16 @@
 				/>
 				<label for="gender">性别：</label>
 				<select id="gender" v-model="user.gender">
-					<option value="保密">保密</option>
-					<option value="男">男</option>
-					<option value="女">女</option>
+					<option value="0">保密</option>
+					<option value="1">男</option>
+					<option value="2">女</option>
 				</select>
 				<label for="status">状态：</label>
 				<select id="status" v-model="user.status">
 					<option value="0">在线</option>
-					<option value="2">忙碌</option>
+
 					<option value="1">隐身</option>
+					<option value="2">忙碌</option>
 				</select>
 				<label for="email">邮箱：</label>
 				<input
@@ -128,7 +129,7 @@ export default {
 				});
 				const data = response.data.data;
 				user.username = data.username;
-				user.status = data.status;
+				user.status = data.onlineStatus;
 				user.gender = data.gender;
 				user.email = data.email;
 				user.phone = data.phone;
@@ -229,7 +230,7 @@ export default {
 				uid: localStorage.getItem("user_id"),
 				info: {
 					username: user.username,
-					gender: user.gender === "男" ? 1 : user.gender === "女" ? 2 : 0,
+					gender: user.gender,
 					onlineStatus: user.status,
 					email: user.email,
 					phone: user.phone,
