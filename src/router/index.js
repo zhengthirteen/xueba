@@ -30,11 +30,6 @@ const routes = [
 		props: true,
 	},
 	{
-		path: "/chat-history/:userId/:userName",
-		name: "ChatHistory",
-		component: ChatHistory,
-	  },
-	{
 		path: "/group-chat",
 		name: "GroupChatStarter",
 		component: GroupChatStarter,
