@@ -24,7 +24,7 @@
 						:class="{ hidden: post.hidden }"
 					>
 						<h3>{{ post.title }}</h3>
-						<p>热度：{{ post.hotness }}</p>
+						<p>浏览量：{{ post.hotness }}</p>
 						<!-- 删除和隐藏按钮 -->
 						<div class="post-actions">
 							<button @click.stop="deletePost(post.id)">删除</button>

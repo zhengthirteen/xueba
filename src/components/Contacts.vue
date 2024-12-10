@@ -29,7 +29,10 @@
 					v-for="(contact, index) in filteredContacts"
 					:key="index"
 					class="contact-item"
-					:class="{ active: selectedContact && selectedContact.friendID === contact.friendID }"
+					:class="{
+						active:
+							selectedContact && selectedContact.friendID === contact.friendID,
+					}"
 					@click="selectContact(contact)"
 				>
 					<p>{{ contact.name }}</p>
@@ -113,10 +116,10 @@
 		<div class="dialog-content">
 			<h3>收到的好友请求</h3>
 			<div v-if="receivedRequests.length === 0"><p>暂无好友申请</p></div>
-			<div v-for="(request, index) in receivedRequests" :key="index">
+			<div v-for="(request, index) in receivedRequests" :key="index" class="tmp">
 				<p>{{ request.name }}</p>
-				<button @click="acceptRequest(request)">接受</button>
-				<button @click="rejectRequest(request)">拒绝</button>
+				<button @click="acceptRequest(request)" class="apply">接受</button>
+				<button @click="rejectRequest(request)" class="reject">拒绝</button>
 			</div>
 			<button @click="closeReceivedRequestsDialog">关闭</button>
 		</div>
@@ -185,7 +188,7 @@ export default {
 				});
 
 				receivedRequests.value = response.data.data.map((request) => ({
-					name: request.friendName, // 假设好友名称为 User + friendID
+					name: request.name,
 					status: request.relationStatus,
 					friendID: request.userID,
 					relationID: request.relationID,
@@ -258,7 +261,6 @@ export default {
 							const messageList = document.querySelector(".message-list");
 							messageList.scrollTop = messageList.scrollHeight;
 						});
-						showAlert("消息发送成功", true);
 					} else {
 						showAlert(`消息发送失败: ${response.data.msg}`, false);
 					}
@@ -802,6 +804,7 @@ body {
 	width: 500px;
 	display: flex;
 	flex-direction: column;
+	text-align: center;
 }
 
 .dialog input {
@@ -819,4 +822,41 @@ body {
 	cursor: pointer;
 	margin-top: 10px;
 }
+.dialog-content p {
+	text-align: center;
+	font-size: 20px;
+	font-weight: 600;
+}
+.dialog-content button.apply,
+.dialog-content button.reject {
+	padding: 10px;
+	width: 120px; /* 增加按钮宽度 */
+	font-size: 16px;
+	font-weight: bold;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	margin: 10px; /* 增加按钮间距 */
+	transition: background-color 0.3s ease;
+}
+
+
+.dialog-content button.apply {
+	background-color: #4caf50;
+	color: white;
+}
+
+.dialog-content button.apply:hover {
+	background-color: #45a049;
+}
+
+.dialog-content button.reject {
+	background-color: #f44336;
+	color: white;
+}
+
+.dialog-content button.reject:hover {
+	background-color: #e53935;
+}
+
 </style>

@@ -20,7 +20,7 @@
 				<ul>
 					<li v-for="post in posts" :key="post.id" @click="goToPost(post.id)">
 						<h3>{{ post.title }}</h3>
-						<p>热度：{{ post.hotness }}</p>
+						<p>浏览量：{{ post.hotness }}</p>
 						<!-- 取消收藏按钮 -->
 						<div class="post-actions">
 							<button @click.stop="deletePost(post.id)">取消收藏</button>

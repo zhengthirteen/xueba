@@ -9,7 +9,7 @@
 				<div class="post-header">
 					<h2>{{ post.postDTO.postTitle }}</h2>
 					<p class="date">发布于：{{ post.postDTO.createTime }}</p>
-					<p class="postScore">当前热度：{{ post.postDTO.postScore }}</p>
+					<p class="date">浏览量：{{ post.postDTO.postScore }}</p>
 				</div>
 
 				<div class="post-content">
@@ -23,16 +23,49 @@
 					</button>
 					<button @click="toggleFavorite" :class="{ favorited: isFavorited }">
 						<img :src="favoriteImage" alt="收藏" />
-            <span>{{ post.postDTO.collectNum }}</span>
+						<span>{{ post.postDTO.collectNum }}</span>
 					</button>
 					<button @click="sharePost">
-						<img src="@/fig/transmit.png" alt="转发" />
+						<img :src="transmitImage" alt="转发" />
 					</button>
 				</div>
 
 				<div v-if="shareMessage" class="share-message">
 					<p>{{ shareMessage }}</p>
 				</div>
+
+				<!-- 评论输入框 -->
+				<div class="comment-input">
+					<textarea
+						v-model="commentContent"
+						placeholder="发表评论..."
+					></textarea>
+					<button @click="reply_p">提交评论</button>
+				</div>
+
+				<!-- 评论列表 -->
+				<ul class="comments">
+					<li v-if="!post.msgDTOList || !post.msgDTOList.length">
+						暂未有用户评论哦~，快来抢沙发
+					</li>
+					<li
+						v-else
+						v-for="comment in post.msgDTOList"
+						:key="comment.msgID"
+						class="comment"
+					>
+						<img
+							:src="comment.userDTO.picURL"
+							alt="用户头像"
+							class="user-avatar"
+						/>
+						<div class="comment-content">
+							<p class="user-name">{{ comment.userDTO.userName }}</p>
+							<p class="comment-text">{{ comment.msgContent }}</p>
+							<p class="comment-time">{{ comment.msgTime }}</p>
+						</div>
+					</li>
+				</ul>
 			</div>
 		</div>
 	</div>
@@ -48,6 +81,9 @@ import likeBlack from "@/assets/like_black.png";
 import likeRed from "@/assets/like_red.png";
 import starBlack from "@/assets/star_black.png";
 import starYellow from "@/assets/star_yellow.png";
+import transmitBlack from "@/assets/transmit.png";
+import transmitblue from "@/assets/transmit2.png";
+
 export default {
 	name: "PostDetail",
 	components: {
@@ -67,9 +103,12 @@ export default {
 			isFavorited,
 			favoriteImage,
 			shareMessage,
+			commentContent,
 			toggleLike,
 			toggleFavorite,
 			sharePost,
+			replyPost,
+			transmitImage,
 		} = usePostActions(post);
 
 		const fetchPostDetails = async () => {
@@ -79,15 +118,26 @@ export default {
 				});
 				if (response.data.code === 1) {
 					post.value = response.data.data;
-					console.log(post.value);
+
 					// 设置点赞图标的初始状态
+					isLiked.value = post.value.like === 1;
+					isFavorited.value = post.value.collect === 1;
+					likeImage.value = isLiked.value ? likeRed : likeBlack;
+					favoriteImage.value = isFavorited.value ? starYellow : starBlack;
 
-          isLiked.value = post.value.like === 1;
-          isFavorited.value = post.value.collect === 1;
-
-          likeImage.value = isLiked.value ? likeRed : likeBlack;
-          favoriteImage.value = isFavorited.value ? starYellow : starBlack;
-					console.log(likeImage.value);
+					await Promise.all(
+						post.value.msgDTOList.map(async (comment) => {
+							const picResponse = await axios.post("/api/source/picture", {
+								picID: comment.userDTO.picID,
+								status: 0,
+							});
+							if (picResponse.data.code === 1) {
+								comment.userDTO.picURL = picResponse.data.data.picURL;
+							} else {
+								comment.userDTO.picURL = ""; // 设置默认头像或处理错误
+							}
+						})
+					);
 				} else {
 					showAlert(`获取帖子详情失败: ${response.data.msg}`, false);
 				}
@@ -95,10 +145,22 @@ export default {
 				showAlert("获取帖子详情失败，请稍后重试！", false);
 			}
 		};
+		function handleMouseenter() {
+			console.log(1);
+			transmitImage.value = transmitblue;
+		}
+		function handleMouseleave() {
+			transmitImage.value = transmitBlack;
+		}
 
 		onMounted(() => {
 			fetchPostDetails();
+			console.log(transmitImage.value);
 		});
+		async function reply_p() {
+			await replyPost();
+			await fetchPostDetails();
+		}
 
 		return {
 			post,
@@ -107,9 +169,13 @@ export default {
 			isFavorited,
 			favoriteImage,
 			shareMessage,
+			commentContent,
 			toggleLike,
 			toggleFavorite,
 			sharePost,
+			replyPost,
+			reply_p,
+			transmitImage,
 		};
 	},
 };
@@ -125,9 +191,9 @@ export default {
 }
 
 .main {
-	position: fixed;
+	position: relative;
 	top: 80px;
-	width: 80%;
+	width: 100vw;
 	padding: 20px;
 	overflow-y: auto;
 }
@@ -192,5 +258,71 @@ h2 {
 	margin-top: 20px;
 	font-size: 16px;
 	color: #28a745;
+}
+
+.comment-input {
+	margin-top: 20px;
+	display: flex;
+	flex-direction: column;
+}
+
+.comment-input textarea {
+	width: 100%;
+	height: 100px;
+	padding: 10px;
+	margin-bottom: 10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	resize: none;
+}
+
+.comment-input button {
+	align-self: flex-end;
+	padding: 10px 20px;
+	background-color: #007bff;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.comments {
+	margin-top: 20px;
+	list-style-type: none;
+	padding: 0;
+}
+
+.comment {
+	display: flex;
+	align-items: flex-start;
+	margin-bottom: 20px;
+}
+
+.user-avatar {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	margin-right: 10px;
+}
+
+.comment-content {
+	background-color: #f1f1f1;
+	padding: 10px;
+	border-radius: 4px;
+	width: 100%;
+}
+
+.user-name {
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+
+.comment-text {
+	margin-bottom: 5px;
+}
+
+.comment-time {
+	font-size: 12px;
+	color: #888;
 }
 </style>
