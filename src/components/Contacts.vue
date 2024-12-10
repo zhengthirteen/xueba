@@ -29,7 +29,7 @@
 					v-for="(contact, index) in filteredContacts"
 					:key="index"
 					class="contact-item"
-					:class="{ active: selectedContact === contact }"
+					:class="{ active: selectedContact && selectedContact.friendID === contact.friendID }"
 					@click="selectContact(contact)"
 				>
 					<p>{{ contact.name }}</p>
@@ -143,8 +143,8 @@ export default {
 		const router = useRouter(); // 获取 Vue Router 实例
 
 		const contacts = ref([]);
-		let intervalID;
-
+		let intervalID1;
+		let intervalID2;
 
 		// 获取好友列表的函数
 		const fetchContacts = async () => {
@@ -157,12 +157,15 @@ export default {
 				console.log(response.data.data);
 
 				// 将服务器返回的好友数据映射到 contacts 列表中
-				contacts.value = response.data.data.map((contact) => ({
+				const newContacts = response.data.data.map((contact) => ({
 					name: contact.friendName, // 好友名称
 					friendID: contact.friendID, // 好友ID
 					relationID: contact.relationID,
 					messages: [], // 假设消息不在初始数据中
 				}));
+				if (JSON.stringify(newContacts) !== JSON.stringify(contacts.value)) {
+					contacts.value = newContacts;
+				}
 			} catch (error) {
 				console.error("获取联系人时出错:", error);
 				showAlert("获取联系人时出错"); // 使用 showAlert 抛出提示
@@ -215,6 +218,10 @@ export default {
 		const selectContact = async (contact) => {
 			selectedContact.value = contact;
 			await fetchMessages(contact.friendID);
+			nextTick(() => {
+				const messageList = document.querySelector(".message-list");
+				messageList.scrollTop = messageList.scrollHeight;
+			});
 		};
 
 		// 发送消息
@@ -505,16 +512,20 @@ export default {
 			}
 		};
 		onMounted(() => {
-        intervalID = setInterval(() => {
-            if (selectedContact.value) {
-                fetchMessages(selectedContact.value.friendID);
-            }
-        }, 100);
+			intervalID1 = setInterval(() => {
+				if (selectedContact.value) {
+					fetchMessages(selectedContact.value.friendID);
+					// fetchContacts();
+				}
+			}, 100);
+			intervalID2 = setInterval(async () => {
+				await fetchContacts();
+			}, 1000);
 		});
 		onUnmounted(() => {
-        clearInterval(intervalID);
-    });
-
+			clearInterval(intervalID1);
+			clearInterval(intervalID2);
+		});
 
 		return {
 			newMessage,

@@ -37,7 +37,10 @@ export default {
 			}
 		};
 		const goToPostDetail = (id) => {
-			router.push(`/post/${id}`);
+			router.push({
+				name: "PostDetail",
+				params: { postID: id },
+			});
 		};
 		const test_getTopics = () => {
 			topics.value = [
@@ -65,7 +68,7 @@ export default {
 		};
 		onMounted(() => {
 			// test_getTopics(); //测试用
-			getTopics();//正式用
+			getTopics(); //正式用
 		});
 
 		return {

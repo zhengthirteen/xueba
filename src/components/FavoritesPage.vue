@@ -61,9 +61,10 @@ export default {
 					posts.value = res.data.data.map((post) => ({
 						id: post.postID,
 						title: post.postTitle,
-						hotness: post.score,
+						hotness: post.postScore,
 						hidden: post.status === 1,
 					}));
+					console.log(posts.value);
 				} else {
 					showAlert("获取收藏帖子数据失败", false);
 				}
@@ -73,7 +74,10 @@ export default {
 		};
 
 		const goToPost = (postId) => {
-			router.push(`/post/${postId}`);
+			router.push({
+				name: "PostDetail",
+				params: { postID: postId },
+			});
 		};
 
 		const deletePost = (postId) => {
@@ -85,14 +89,12 @@ export default {
 					async (confirmed) => {
 						if (confirmed) {
 							try {
-								await axios.post("/api/post/canclefavorite", null, {
-									params: {
-										userID: localStorage.getItem("user_id"),
-										postID: postId,
-									},
+								await axios.post("/api/post/canclefavorite", {
+									userID: localStorage.getItem("user_id"),
+									postID: postId,
 								});
 								posts.value = posts.value.filter((post) => post.id !== postId);
-								showAlert("取消收藏成功");
+								console.log(posts.value);
 							} catch (error) {
 								showAlert("取消收藏失败，请稍后重试");
 							}
@@ -179,6 +181,9 @@ body {
 	padding: 0;
 	margin: 0;
 }
+.posts-list h2 {
+	color: gray;
+}
 
 .post-item {
 	width: 100%; /* 确保占满全宽 */
@@ -197,12 +202,15 @@ body {
 
 h3 {
 	margin: 0;
-	font-size: 18px;
+	font-size: 25px;
+	font-weight: 600;
 }
 
 p {
 	margin: 5px 0;
 	color: #888;
+	font-size: 20px;
+	font-weight: 400;
 }
 
 /* 按钮样式 */
@@ -244,6 +252,6 @@ h2 {
 	padding: 10px;
 
 	/* 增加边框，给标题加点装饰 */
-	border-bottom: 2px solid #ffd700;
+	border-bottom: 2px solid gray;
 }
 </style>
