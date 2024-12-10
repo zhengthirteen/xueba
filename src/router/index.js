@@ -61,10 +61,10 @@ const routes = [
 	{ path: "/contacts", name: "Contacts", component: Contacts },
 	{ path: "/forgot-pwd", name: "ForgotPwd", component: ForgotPwd },
 	{
-		path: "/postDetail", // 动态路由，`:id` 代表帖子的 ID
+		path: "/postDetail/:postID",  // 使用动态参数 :postID
 		name: "PostDetail",
 		component: PostDetail,
-		props: true, // 允许通过 props 传递路由参数
+		props: true, // 启用 props 传递路由参数
 	},
 	{
 		path: "/update-password",

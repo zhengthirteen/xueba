@@ -36,27 +36,30 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, inject } from 'vue';
 import axios from '../utils/axios';
-import Sidebar from '../components/Sidebar.vue'; // 导入 Sidebar 组件
-import { usePostActions } from '../hooks/usePostActions'; // 导入自定义 hook
+import Sidebar from '../components/Sidebar.vue';
+import { usePostActions } from '../hooks/usePostActions'; // 自定义 hook
 
 export default {
   name: "PostDetail",
   components: {
     Sidebar,
   },
-  setup() {
-    const router = useRouter();
+  props: {
+    postID: {
+      type: String,
+      required: true,  // 确保 postID 必须传递
+    },
+  },
+  setup(props) {
     const post = ref({});
-    const postID = router.currentRoute.value.query.postID;
     const showAlert = inject("showAlert");
 
     const fetchPostDetails = async () => {
       try {
         const response = await axios.get('/api/source/postAll', {
-          params: { postID }
+          params: { postID: props.postID }, // 使用传入的 postID
         });
         if (response.data.code === 1) {
           post.value = response.data.data;
