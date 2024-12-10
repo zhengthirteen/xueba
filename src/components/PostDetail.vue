@@ -14,6 +14,10 @@
 
 				<div class="post-content">
 					<p>{{ post.content }}</p>
+					<!-- 图片展示区域 -->
+					<div v-if="post.pictureDTOList[0]" class="image-preview">
+						<img :src="post.pictureDTOList[0].picURL" alt="帖子图片" />
+					</div>
 				</div>
 
 				<div class="post-actions">
@@ -25,7 +29,11 @@
 						<img :src="favoriteImage" alt="收藏" />
 						<span>{{ post.postDTO.collectNum }}</span>
 					</button>
-					<button @click="sharePost">
+					<button
+						@mouseenter="handleMouseenter"
+						@mouseleave="handleMouseleave"
+						@click="sharePost"
+					>
 						<img :src="transmitImage" alt="转发" />
 					</button>
 				</div>
@@ -35,12 +43,15 @@
 				</div>
 
 				<!-- 评论输入框 -->
+				<!-- 评论输入框 -->
 				<div class="comment-input">
 					<textarea
 						v-model="commentContent"
 						placeholder="发表评论..."
 					></textarea>
-					<button @click="reply_p">提交评论</button>
+					<button @click="reply_p" :disabled="!commentContent.trim()">
+						提交评论
+					</button>
 				</div>
 
 				<!-- 评论列表 -->
@@ -146,7 +157,6 @@ export default {
 			}
 		};
 		function handleMouseenter() {
-			console.log(1);
 			transmitImage.value = transmitblue;
 		}
 		function handleMouseleave() {
@@ -155,9 +165,12 @@ export default {
 
 		onMounted(() => {
 			fetchPostDetails();
-			console.log(transmitImage.value);
 		});
 		async function reply_p() {
+			if (!commentContent.value.trim()) {
+				showAlert("评论内容不能为空！", false);
+				return;
+			}
 			await replyPost();
 			await fetchPostDetails();
 		}
@@ -324,5 +337,19 @@ h2 {
 .comment-time {
 	font-size: 12px;
 	color: #888;
+}
+
+/* 图片展示区域 */
+.image-preview {
+	margin-top: 15px;
+	text-align: center;
+}
+
+.image-preview img {
+	width: 100%; /* 设置图片宽度与内容输入框一致 */
+	max-width: 100%;
+	height: auto;
+	border: 1px solid #ccc;
+	border-radius: 4px;
 }
 </style>

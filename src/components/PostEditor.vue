@@ -45,6 +45,11 @@
 						<input type="file" @change="handleImageUpload" />
 					</div>
 
+					<!-- 图片展示区域 -->
+					<div v-if="imageUrl" class="image-preview">
+						<img :src="imageUrl" alt="上传的图片" />
+					</div>
+
 					<!-- 表情选择功能 -->
 					<div v-if="isEmojiPickerVisible" class="emoji-picker">
 						<button type="button" @click="insertEmoji('😊')">😊</button>
@@ -79,7 +84,6 @@ export default {
 		const router = useRouter();
 		const postTitle = ref("");
 		const postContent = ref("");
-		//转为数字类型 const userID = localStorage.getItem("user_id");
 		const userID = parseInt(localStorage.getItem("user_id")); // 获取用户 ID
 		const showAlert = inject("showAlert"); // 使用 inject 获取 showAlert 函数
 
@@ -91,6 +95,31 @@ export default {
 		// 发布帖子函数
 		const submitPost = async () => {
 			try {
+				let uploadedImageUrl = imageUrl.value;
+				if (uploadedImageUrl) {
+					const formData = new FormData();
+					const response = await fetch(uploadedImageUrl);
+					const blob = await response.blob();
+					formData.append("image", blob, "postImage.jpg");
+
+					const uploadResponse = await axios.post(
+						"/api/user/upload",
+						formData,
+						{
+							headers: {
+								"Content-Type": "multipart/form-data",
+							},
+						}
+					);
+
+					if (uploadResponse.status === 200 && uploadResponse.data.code === 1) {
+						uploadedImageUrl = uploadResponse.data.data;
+					} else {
+						showAlert("图片上传失败，请稍后再试！", false);
+						return;
+					}
+				}
+
 				const response = await axios.post("/api/post/publishpost", {
 					pdto: {
 						userID: userID,
@@ -101,7 +130,7 @@ export default {
 						userID: userID,
 					},
 					picdto: {
-						url: imageUrl.value || "",
+						url: uploadedImageUrl || "",
 					},
 				});
 
@@ -135,9 +164,8 @@ export default {
 				const reader = new FileReader();
 				reader.onload = (e) => {
 					imageUrl.value = e.target.result;
-					postContent.value += `<img src="${imageUrl.value}" alt="插入的图片" />`;
 				};
-				reader.readAsDataURL(file); // 转换图片为 base64 格式并插入
+				reader.readAsDataURL(file); // 转换图片为 base64 格式
 			}
 		};
 
@@ -156,6 +184,7 @@ export default {
 			isEmojiPickerVisible,
 			handleImageUpload,
 			insertEmoji,
+			imageUrl,
 		};
 	},
 };
@@ -171,9 +200,9 @@ export default {
 }
 
 .main {
-	position: fixed;
+	position: relative;
 	top: 80px;
-	width: 80%;
+	width: 100vw;
 	padding: 20px;
 	overflow-y: auto;
 }
@@ -278,6 +307,19 @@ button[type="button"] {
 
 .submit-button:hover {
 	background-color: #45a049;
+}
+/* 图片展示区域 */
+.image-preview {
+	margin-top: 15px;
+	text-align: center;
+}
+
+.image-preview img {
+	width: 100%; /* 设置图片宽度与内容输入框一致 */
+	max-width: 100%;
+	height: auto;
+	border: 1px solid #ccc;
+	border-radius: 4px;
 }
 
 /* 响应式设计 */

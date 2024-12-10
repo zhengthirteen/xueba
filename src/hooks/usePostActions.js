@@ -70,24 +70,41 @@ export function usePostActions(post) {
 	};
 
 	// 转发帖子
+	// const sharePost = () => {
+	// 	transmitImage.value = transmitBlue;
+	// 	const postUrl = `http://47.108.29.209/post/${post.value.postDTO.postID}`;
+	// 	console.log(post);
+	// 	const message = `我在学吧平台上看到了这篇帖子，快来一起看看吧！\n【${post.value.postDTO.postTitle}】\n${postUrl}`;
+
+	// 	if (navigator.clipboard) {
+	// 		navigator.clipboard
+	// 			.writeText(message)
+	// 			.then(() => {
+	// 				showAlert("帖子地址已复制到剪贴板", true);
+	// 			})
+	// 			.catch((err) => {
+	// 				showAlert("复制失败，请手动复制帖子地址", false);
+	// 			});
+	// 	} else {
+	// 		shareMessage.value = message;
+	// 		showAlert("当前环境不支持剪贴板操作，请手动复制帖子地址", false);
+	// 	}
+	// };
 	const sharePost = () => {
 		transmitImage.value = transmitBlue;
-		const postUrl = `http://47.108.29.209/post/${post.value.postDTO.postID}`;
+		const postUrl = `http://47.108.29.209/postDetail/${post.value.postDTO.postID}`;
 		console.log(post);
 		const message = `我在学吧平台上看到了这篇帖子，快来一起看看吧！\n【${post.value.postDTO.postTitle}】\n${postUrl}`;
-
-		if (navigator.clipboard) {
-			navigator.clipboard
-				.writeText(message)
-				.then(() => {
-					showAlert("帖子地址已复制到剪贴板", true);
-				})
-				.catch((err) => {
-					showAlert("复制失败，请手动复制帖子地址", false);
-				});
-		} else {
-			
-			showAlert("当前环境不支持剪贴板操作，请手动复制帖子地址", false);
+		try {
+			const textarea = document.createElement("textarea");
+			textarea.value = message;
+			document.body.appendChild(textarea);
+			textarea.select();
+			document.execCommand("copy");
+			document.body.removeChild(textarea);
+			showAlert("帖子地址已复制到剪贴板", true);
+		} catch (err) {
+			showAlert("复制失败，请手动复制帖子地址", false);
 		}
 	};
 

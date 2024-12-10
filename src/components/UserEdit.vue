@@ -184,6 +184,7 @@ export default {
 			canvas.toBlob(async (blob) => {
 				const formData = new FormData();
 				formData.append("image", blob, "avatar.jpg");
+					
 				try {
 					const response = await axios.post("/api/user/upload", formData, {
 						headers: {
