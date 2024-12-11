@@ -457,7 +457,7 @@ export default {
 			isReceivedRequestsDialogOpen.value = false;
 		};
 
-		// 接受好友请求
+		// 接受好友请求并自动发送一条消息
 		const acceptRequest = async (request) => {
 			const userID = parseInt(localStorage.getItem("user_id"), 10);
 			const handleRequest = {
@@ -484,22 +484,38 @@ export default {
 						(r) => r !== request
 					);
 
-					// 发送一条消息给对方
-					const message = {
-						text: `Hi ${request.name}, I accepted your friend request!`, // 自动回复信息
-						time: new Date().toLocaleTimeString([], {
-							hour: "2-digit",
-							minute: "2-digit",
-						}),
-						sender: "me",
+					// 自动发送一条消息给对方
+					const messagePayload = {
+						msg_type: 2,
+						user_id: userID,
+						pic_id: "",
+						rela_id: request.friendID,
+						status: 0,
+						content: `Hi ${request.name}, I accepted your friend request!`, // 自动回复信息
 					};
 
-					// 找到接受请求的联系人并将该消息加入联系人聊天记录
-					const contact = contacts.value.find(
-						(contact) => contact.name === request.name
-					);
-					if (contact) {
-						contact.messages.push(message);
+					const messageResponse = await axios.post("/api/friend/sendmessage", messagePayload);
+
+					if (messageResponse.status === 200 && messageResponse.data.code === 1) {
+						// const message = {
+						// 	text: messagePayload.content,
+						// 	time: new Date().toLocaleTimeString([], {
+						// 		hour: "2-digit",
+						// 		minute: "2-digit",
+						// 	}),
+						// 	sender: "me",
+						// };
+						console.log("request", message);
+
+						// 找到接受请求的联系人并将该消息加入联系人聊天记录
+						const contact = contacts.value.find(
+							(contact) => contact.name === request.name
+						);
+						if (contact) {
+							contact.messages.push(message);
+						}
+					} else {
+						showAlert(`消息发送失败: ${messageResponse.data.msg}`, false);
 					}
 
 					// 弹出提示框通知用户
@@ -561,11 +577,11 @@ export default {
 				if (selectedContact.value) {
 					fetchMessages(selectedContact.value.friendID);
 				}
-			}, 100);
+			}, 10000);
 			intervalID2 = setInterval(async () => {
 				await fetchContacts();
 				await checkNewFriendRequests();
-			}, 1000);
+			}, 10000);
 		});
 		onUnmounted(() => {
 			clearInterval(intervalID1);
