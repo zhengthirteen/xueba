@@ -16,7 +16,9 @@ import Contacts from "../components/Contacts.vue";
 import ForgotPwd from "../components/ForgotPwd.vue";
 import ContactDetail from "../components/ContactDetail.vue";
 import PostDetail from "../components/PostDetail.vue";
-import ChatHistory from "../components/ChatHistory.vue";
+import PostToUser from "../components/posttouser.vue";
+import PostToUserPublishPage from "../components/PostToUserPublishPage.vue";
+import PostToUserFavoritesPage from "../components/PostToUserFavoritesPage.vue";
 import UpdatePassword from "../components/UpdatePassword.vue";
 
 const routes = [
@@ -29,6 +31,21 @@ const routes = [
 		component: ContactDetail,
 		props: true,
 	},
+	{
+		path: '/user/:userID',
+		name: 'PostToUser',
+		component: PostToUser, 
+	},
+	{
+		path: '/Publish/:userID',
+		name: 'PostToUserPublishPage',
+		component: PostToUserPublishPage,
+	  },
+	  {
+		path: '/Favorites/:userID',
+		name: 'PostToUserFavoritesPage',
+		component: PostToUserFavoritesPage,
+	  },
 	{
 		path: "/group-chat",
 		name: "GroupChatStarter",

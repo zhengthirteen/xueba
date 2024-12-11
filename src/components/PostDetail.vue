@@ -9,7 +9,15 @@
 				<div class="post-header">
 					<h2>{{ post.postDTO.postTitle }}</h2>
 					<div class="author-info">
-						<img :src="authorAvatar" alt="作者头像" class="author-avatar" />
+						<img 
+							:src="authorAvatar" 
+							alt="作者头像" 
+							class="author-avatar" 
+							@mouseenter="handleAvatarMouseenter" 
+							@mouseleave="handleAvatarMouseleave" 
+							@click="goToPostToUser"
+							:class="{ 'avatar-hover': isAvatarHovered }"
+						/>
 						<p class="author-name">{{ authorName }}</p>			
 					</div>
 					<p class="author-id">作者ID：{{ authorID }}</p>
@@ -53,6 +61,7 @@
 					<textarea
 						v-model="commentContent"
 						placeholder="发表评论..."
+						@keyup.enter="handleEnter"
 					></textarea>
 					<button @click="reply_p" :disabled="!commentContent.trim()">
 						提交评论
@@ -74,6 +83,10 @@
 							:src="comment.userDTO.picURL"
 							alt="用户头像"
 							class="user-avatar"
+							@mouseenter="handleCommentAvatarMouseenter(comment.msgID)"
+							@mouseleave="handleCommentAvatarMouseleave(comment.msgID)"
+							@click="goToUserPage(comment.userDTO.userID)"
+							:class="{ 'avatar-hover': isCommentAvatarHovered[comment.msgID] }"
 						/>
 						<div class="comment-content">
 							<p class="user-name">{{ comment.userDTO.userName }}</p>
@@ -85,6 +98,10 @@
 			</div>
 		</div>
 	</div>
+	<!-- 返回按钮 -->
+	<button class="return-button" @click="goBack">
+		<img src="@/assets/return.png" alt="返回" />
+	</button>
 </template>
 
 <script>
@@ -111,6 +128,8 @@ export default {
 		const authorAvatar = ref("");
 		const authorName = ref("");
 		const authorID = ref("");
+		const isAvatarHovered = ref(false);
+		const isCommentAvatarHovered = ref({});
 
 		const showAlert = inject("showAlert");
 		const route = useRoute();
@@ -187,6 +206,24 @@ export default {
 		function handleMouseleave() {
 			transmitImage.value = transmitBlack;
 		}
+		function handleAvatarMouseenter() {
+			isAvatarHovered.value = true;
+		}
+		function handleAvatarMouseleave() {
+			isAvatarHovered.value = false;
+		}
+		function handleCommentAvatarMouseenter(msgID) {
+			isCommentAvatarHovered.value = { ...isCommentAvatarHovered.value, [msgID]: true };
+		}
+		function handleCommentAvatarMouseleave(msgID) {
+			isCommentAvatarHovered.value = { ...isCommentAvatarHovered.value, [msgID]: false };
+		}
+		function goToPostToUser() {
+			router.push({ name: 'PostToUser', params: { userID: authorID.value } });
+		}
+		function goToUserPage(userID) {
+			router.push({ name: 'PostToUser', params: { userID } });
+		}
 
 		onMounted(() => {
 			fetchPostDetails();
@@ -198,6 +235,20 @@ export default {
 			}
 			await replyPost();
 			await fetchPostDetails();
+		}
+
+		function handleEnter(event) {
+			if (event.shiftKey) {
+				// 插入换行符
+				commentContent.value += "\n";
+			} else {
+				// 提交评论
+				reply_p();
+			}
+		}
+
+		function goBack() {
+			router.go(-1);
 		}
 
 		return {
@@ -217,6 +268,16 @@ export default {
 			authorAvatar,
 			authorName,
 			authorID,
+			goBack,
+			handleEnter,
+			isAvatarHovered,
+			handleAvatarMouseenter,
+			handleAvatarMouseleave,
+			handleCommentAvatarMouseenter,
+			handleCommentAvatarMouseleave,
+			isCommentAvatarHovered,
+			goToPostToUser,
+			goToUserPage,
 		};
 	},
 };
@@ -233,7 +294,7 @@ export default {
 
 .main {
 	position: relative;
-	top: 80px;
+	top: 3vh;
 	width: 100vw;
 	padding: 20px;
 	overflow-y: auto;
@@ -344,6 +405,11 @@ h2 {
 	height: 50px;
 	border-radius: 50%;
 	margin-right: 10px;
+	transition: filter 0.3s;
+}
+
+.user-avatar.avatar-hover {
+	filter: brightness(0.7);
 }
 
 .comment-content {
@@ -392,6 +458,11 @@ h2 {
 	height: 50px;
 	border-radius: 50%;
 	margin-right: 10px;
+	transition: filter 0.3s;
+}
+
+.author-avatar.avatar-hover {
+	filter: brightness(0.7);
 }
 
 .author-name {
@@ -402,5 +473,19 @@ h2 {
 .author-id {
 	color: #888;
 	font-size: 14px;
+}
+
+.return-button {
+	position: fixed;
+	top: 10vh;
+	left: 20vw;
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+}
+
+.return-button img {
+	width: 30px;
+	height: 30px;
 }
 </style>
