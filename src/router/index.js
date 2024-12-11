@@ -16,7 +16,7 @@ import Contacts from "../components/Contacts.vue";
 import ForgotPwd from "../components/ForgotPwd.vue";
 import ContactDetail from "../components/ContactDetail.vue";
 import PostDetail from "../components/PostDetail.vue";
-import PostToUser from "../components/posttouser.vue";
+import PostToUser from "../components/PostToUser.vue";
 import PostToUserPublishPage from "../components/PostToUserPublishPage.vue";
 import PostToUserFavoritesPage from "../components/PostToUserFavoritesPage.vue";
 import UpdatePassword from "../components/UpdatePassword.vue";

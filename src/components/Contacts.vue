@@ -202,6 +202,7 @@ export default {
 						relationID: contact.relationID,
 						messages: [], // 假设消息不在初始数据中
 						avatarURL, // 好友头像URL
+						status: contact.status, // 好友状态
 					};
 				});
 				if (JSON.stringify(newContacts) !== JSON.stringify(contacts.value)) {
@@ -268,6 +269,10 @@ export default {
 		// 发送消息
 		const sendMessage = async () => {
 			if (newMessage.value.trim() && selectedContact.value) {
+				if (selectedContact.value.status === 0) {
+					showAlert("无法发送消息，对方已将您删除", false);
+					return;
+				}
 				const userID = parseInt(localStorage.getItem("user_id"), 10);
 				console.log(selectedContact.value);
 
