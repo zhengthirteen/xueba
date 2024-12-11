@@ -18,7 +18,7 @@
 				<p v-if="posts.length === 0">暂无收藏的帖子</p>
 				<!-- 帖子项列表 -->
 				<ul>
-					<li v-for="post in posts" :key="post.id" @click="goToPost(post.id)">
+					<li v-for="post in posts" :key="post.id" @click="goToPost(post.id)" :class="{ hidden: post.hidden }" class="post-item">
 						<h3>{{ post.title }}</h3>
 						<p>浏览量：{{ post.hotness }}</p>
 						<!-- 取消收藏按钮 -->
@@ -192,25 +192,32 @@ body {
 	padding: 15px;
 	border-radius: 5px;
 	cursor: pointer;
-	transition: background-color 0.3s;
+	transition: background-color 0.3s, transform 0.3s;
 	box-sizing: border-box; /* 确保内外边距不会影响宽度 */
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
 }
 
 .post-item:hover {
 	background-color: #f1f1f1;
+	transform: translateY(-5px); /* 鼠标悬停时向上移动 */
 }
 
 h3 {
 	margin: 0;
 	font-size: 25px;
 	font-weight: 600;
+	color: #333; /* 设置标题颜色 */
 }
 
 p {
 	margin: 5px 0;
 	color: #888;
-	font-size: 20px;
-	font-weight: 400;
+	font-size: 18px; /* 调整字体大小 */
+}
+
+/* 隐藏帖子时，灰度效果 */
+.post-item.hidden {
+	filter: grayscale(100%);
 }
 
 /* 按钮样式 */

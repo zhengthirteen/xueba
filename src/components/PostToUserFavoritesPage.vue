@@ -5,16 +5,22 @@
 			<!-- 导航栏 -->
 			<nav class="navbar">
 				<ul>
-					<li><router-link to="/profile">我的</router-link></li>
-					<li><router-link to="/publish">发表</router-link></li>
-					<li><router-link to="/favorites">收藏夹</router-link></li>
+					<li><router-link :to="{ name: 'PostToUser', params: { userID: $route.params.userID }}">用户信息</router-link></li>
+					<li><router-link :to="{ name: 'PostToUserPublishPage', params: { userID: $route.params.userID }}">已发表</router-link></li>
+					<li><router-link :to="{ name: 'PostToUserFavoritesPage', params: { userID: $route.params.userID }}">收藏夹</router-link></li>
 				</ul>
 			</nav>
 
-			<!-- 帖子列表 -->
+			<!-- 返回按钮 -->
+			<div class="back-button" @click="goBack">
+				<img src="@/assets/return.png" alt="返回" />
+			</div>
+
+			<!-- 收藏的帖子列表 -->
 			<div class="posts-list">
-				<h2>发表过的帖子</h2>
-				<p v-if="posts.length === 0">暂无发表的帖子</p>
+				<h2>我收藏的帖子</h2>
+				<!-- 如果没有收藏的帖子，显示暂无收藏的帖子 -->
+				<p v-if="posts.length === 0">暂无收藏的帖子</p>
 				<!-- 帖子项列表 -->
 				<ul>
 					<li
@@ -26,13 +32,6 @@
 					>
 						<h3>{{ post.title }}</h3>
 						<p>浏览量：{{ post.hotness }}</p>
-						<!-- 删除和隐藏按钮 -->
-						<div class="post-actions">
-							<button @click.stop="deletePost(post.id)">删除</button>
-							<button @click.stop="toggleHide(post.id)">
-								{{ post.hidden ? "显示" : "隐藏" }}
-							</button>
-						</div>
 					</li>
 				</ul>
 			</div>
@@ -43,24 +42,24 @@
 <script>
 import { ref, onMounted, inject } from "vue";
 import Sidebar from "../components/Sidebar.vue";
-import { useRouter } from "vue-router";
 import axios from "../utils/axios";
+import { useRouter, useRoute } from "vue-router";
 
 export default {
-	name: "PublishPage",
+	name: "FavoritesPage",
 	components: {
 		Sidebar,
 	},
 	setup() {
 		const posts = ref([]);
 		const showAlert = inject("showAlert");
-		const showConfirm = inject("showConfirm");
 		const router = useRouter();
+		const route = useRoute();
 
 		const fetchPosts = async () => {
 			try {
-				const userID = localStorage.getItem("user_id");
-				const res = await axios.get("/api/post/myposts", {
+				const userID = route.params.userID;
+				const res = await axios.get("/api/post/myfavoriteposts", {
 					params: {
 						userID: userID,
 					},
@@ -72,11 +71,12 @@ export default {
 						hotness: post.postScore,
 						hidden: post.status === 1,
 					}));
+					console.log(posts.value);
 				} else {
-					showAlert("获取帖子数据失败", false);
+					showAlert("获取收藏帖子数据失败", false);
 				}
 			} catch (error) {
-				showAlert("获取帖子数据失败，请稍后重试", false);
+				showAlert("获取收藏帖子数据失败，请稍后重试", false);
 			}
 		};
 
@@ -87,46 +87,8 @@ export default {
 			});
 		};
 
-		const deletePost = (postId) => {
-			if (showAlert) {
-				showConfirm(
-					"确认删除此帖子吗？",
-					"删除成功",
-					true,
-					async (confirmed) => {
-						if (confirmed) {
-							try {
-								const userID = localStorage.getItem("user_id");
-								const res = await axios.post("/api/post/deletepost", {
-									userID: userID,
-									postID: postId,
-								});
-								if (res.data.code === 1) {
-									posts.value = posts.value.filter(
-										(post) => post.id !== postId
-									);
-								} else {
-									showAlert("删除失败，请稍后重试");
-								}
-							} catch (error) {
-								showAlert("删除失败，请稍后重试");
-							}
-						} else {
-							showAlert("删除操作已取消");
-						}
-					}
-				);
-			}
-		};
-
-		const toggleHide = (postId) => {
-			const post = posts.value.find((post) => post.id === postId);
-			if (post) {
-				post.hidden = !post.hidden;
-				if (showAlert) {
-					showAlert(post.hidden ? "帖子已隐藏！" : "帖子已显示！", post.hidden);
-				}
-			}
+		const goBack = () => {
+			router.back();
 		};
 
 		onMounted(() => {
@@ -136,8 +98,7 @@ export default {
 		return {
 			posts,
 			goToPost,
-			deletePost,
-			toggleHide,
+			goBack,
 		};
 	},
 };
@@ -190,6 +151,20 @@ body {
 .navbar a:hover {
 	text-decoration: underline;
 }
+
+/* 返回按钮样式 */
+.back-button {
+	position: fixed;
+	top: 10vh;
+	left: 13vw;
+	cursor: pointer;
+}
+
+.back-button img {
+	width: 30px;
+	height: 30px;
+}
+
 /* 主内容区 */
 .main {
 	top: -10px;
@@ -285,21 +260,6 @@ h2 {
 	padding: 10px;
 
 	/* 增加边框，给标题加点装饰 */
-	border-bottom: 2px solid grey;
-}
-.posts-list ul {
-    list-style: none;
-    padding: 0;
-}
-.posts-list li {
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin-top: 15px;
-    margin-bottom: 15px;
-		border-radius: 20px;
-}
-.posts-list li:hover {
-    background-color: #f0f0f0;
-    cursor: pointer;
+	border-bottom: 2px solid gray;
 }
 </style>

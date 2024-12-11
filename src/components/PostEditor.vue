@@ -201,7 +201,7 @@ export default {
 
 .main {
 	position: relative;
-	top: 80px;
+	top: -5vh;
 	width: 100vw;
 	padding: 20px;
 	overflow-y: auto;
