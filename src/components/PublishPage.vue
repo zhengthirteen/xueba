@@ -104,7 +104,6 @@ export default {
 									posts.value = posts.value.filter(
 										(post) => post.id !== postId
 									);
-									showAlert("删除成功");
 								} else {
 									showAlert("删除失败，请稍后重试");
 								}

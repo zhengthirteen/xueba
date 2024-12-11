@@ -8,6 +8,11 @@
 			<div class="post-detail" v-if="post.postDTO">
 				<div class="post-header">
 					<h2>{{ post.postDTO.postTitle }}</h2>
+					<div class="author-info">
+						<img :src="authorAvatar" alt="作者头像" class="author-avatar" />
+						<p class="author-name">{{ authorName }}</p>			
+					</div>
+					<p class="author-id">作者ID：{{ authorID }}</p>
 					<p class="date">发布于：{{ post.postDTO.createTime }}</p>
 					<p class="date">浏览量：{{ post.postDTO.postScore }}</p>
 				</div>
@@ -103,6 +108,9 @@ export default {
 	setup() {
 		const router = useRouter();
 		const post = ref({});
+		const authorAvatar = ref("");
+		const authorName = ref("");
+		const authorID = ref("");
 
 		const showAlert = inject("showAlert");
 		const route = useRoute();
@@ -135,6 +143,23 @@ export default {
 					isFavorited.value = post.value.collect === 1;
 					likeImage.value = isLiked.value ? likeRed : likeBlack;
 					favoriteImage.value = isFavorited.value ? starYellow : starBlack;
+					console.log(post.value.postDTO.userID);
+					authorName.value = post.value.postDTO.userName;
+					authorID.value = post.value.postDTO.userID;
+					console.log(1);
+					
+					
+					
+					const picResponse = await axios.post("/api/source/picture", {
+						picID: post.value.postDTO.picID,
+						status: 0,
+					});
+					if (picResponse.data.code === 1) {
+						authorAvatar.value = picResponse.data.data.picURL;
+					} else {
+						authorAvatar.value = ""; // 设置默认头像或处理错误
+						showAlert("获取作者头像失败，请稍后再试！", false);
+					}
 
 					await Promise.all(
 						post.value.msgDTOList.map(async (comment) => {
@@ -189,6 +214,9 @@ export default {
 			replyPost,
 			reply_p,
 			transmitImage,
+			authorAvatar,
+			authorName,
+			authorID,
 		};
 	},
 };
@@ -351,5 +379,28 @@ h2 {
 	height: auto;
 	border: 1px solid #ccc;
 	border-radius: 4px;
+}
+.author-info {
+	display: flex;
+	align-items: center;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.author-avatar {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	margin-right: 10px;
+}
+
+.author-name {
+	font-weight: bold;
+	margin-right: 10px;
+}
+
+.author-id {
+	color: #888;
+	font-size: 14px;
 }
 </style>

@@ -1,10 +1,10 @@
 <template>
-	<div class="layout">
+	<div class="layout" @click="hideMenu">
 		<Sidebar />
 		<div class="main">
 			<!-- 左侧联系人列表 -->
 			<div class="contact-list">
-				<div class="search-container">
+				<div class="search-container" @click.stop>
 					<input
 						type="text"
 						v-model="searchQuery"
@@ -13,6 +13,7 @@
 					/>
 					<div class="plus-icon" @click="toggleMenu">
 						<span>+</span>
+						<span v-if="hasNewFriendRequest" class="red-dot"></span>
 					</div>
 				</div>
 
@@ -20,7 +21,10 @@
 				<div v-if="isMenuVisible" class="menu">
 					<button @click="openAddFriendDialog">添加好友</button>
 					<button @click="openGroupChatDialog">发起群聊</button>
-					<button @click="openReceivedRequestsDialog">收到申请</button>
+					<button @click="openReceivedRequestsDialog">
+						收到申请
+						<span v-if="hasNewFriendRequest" class="red-dot2"></span>
+					</button>
 				</div>
 				<div v-if="filteredContacts.length === 0" class="no-matches">
 					<p>无匹配对象</p>
@@ -35,6 +39,7 @@
 					}"
 					@click="selectContact(contact)"
 				>
+					<img :src="contact.avatarURL" alt="好友头像" class="contact-avatar" />
 					<p>{{ contact.name }}</p>
 					<button class="menu-button" @click.stop="goToDetailPage(contact)">
 						<span class="dot"></span>
@@ -116,7 +121,11 @@
 		<div class="dialog-content">
 			<h3>收到的好友请求</h3>
 			<div v-if="receivedRequests.length === 0"><p>暂无好友申请</p></div>
-			<div v-for="(request, index) in receivedRequests" :key="index" class="tmp">
+			<div
+				v-for="(request, index) in receivedRequests"
+				:key="index"
+				class="tmp"
+			>
 				<p>{{ request.name }}</p>
 				<button @click="acceptRequest(request)" class="apply">接受</button>
 				<button @click="rejectRequest(request)" class="reject">拒绝</button>
@@ -149,6 +158,26 @@ export default {
 		let intervalID1;
 		let intervalID2;
 
+		const hideMenu = () => {
+			isMenuVisible.value = false;
+		};
+
+		// 用于显示是否有新好友请求的红点
+		const hasNewFriendRequest = ref(false);
+
+		const checkNewFriendRequests = async () => {
+			const userID = localStorage.getItem("user_id");
+			try {
+				const response = await axios.post("/api/friend/applyforget", {
+					userID: parseInt(userID, 10),
+				});
+				hasNewFriendRequest.value = response.data.data.length > 0;
+			} catch (error) {
+				console.error("获取好友请求时出错:", error);
+				showAlert("获取好友请求时出错"); // 使用 showAlert 抛出提示
+			}
+		};
+
 		// 获取好友列表的函数
 		const fetchContacts = async () => {
 			const userID = localStorage.getItem("user_id"); // 从本地存储中获取用户ID
@@ -160,14 +189,23 @@ export default {
 				console.log(response.data.data);
 
 				// 将服务器返回的好友数据映射到 contacts 列表中
-				const newContacts = response.data.data.map((contact) => ({
-					name: contact.friendName, // 好友名称
-					friendID: contact.friendID, // 好友ID
-					relationID: contact.relationID,
-					messages: [], // 假设消息不在初始数据中
-				}));
+				const newContacts = response.data.data.map(async (contact) => {
+					const picResponse = await axios.post("/api/source/picture", {
+						picID: contact.friendImgID,
+						status: 0,
+					});
+					const avatarURL =
+						picResponse.data.code === 1 ? picResponse.data.data.picURL : "";
+					return {
+						name: contact.friendName, // 好友名称
+						friendID: contact.friendID, // 好友ID
+						relationID: contact.relationID,
+						messages: [], // 假设消息不在初始数据中
+						avatarURL, // 好友头像URL
+					};
+				});
 				if (JSON.stringify(newContacts) !== JSON.stringify(contacts.value)) {
-					contacts.value = newContacts;
+					contacts.value = await Promise.all(newContacts);
 				}
 			} catch (error) {
 				console.error("获取联系人时出错:", error);
@@ -517,11 +555,11 @@ export default {
 			intervalID1 = setInterval(() => {
 				if (selectedContact.value) {
 					fetchMessages(selectedContact.value.friendID);
-					// fetchContacts();
 				}
 			}, 100);
 			intervalID2 = setInterval(async () => {
 				await fetchContacts();
+				await checkNewFriendRequests();
 			}, 1000);
 		});
 		onUnmounted(() => {
@@ -557,6 +595,8 @@ export default {
 			closeReceivedRequestsDialog,
 			acceptRequest,
 			rejectRequest,
+			hasNewFriendRequest,
+			hideMenu,
 		};
 	},
 };
@@ -593,7 +633,7 @@ body {
 
 .main {
 	display: flex;
-	height: 80vh;
+	height: 85vh;
 	width: 80vw;
 	margin-left: 30vh;
 	border: 1px solid #ccc;
@@ -626,10 +666,16 @@ body {
 
 .contact-item {
 	display: flex;
+	align-items: center; /* 垂直居中 */
 	justify-content: space-between;
 	padding: 10px;
 	cursor: pointer;
 	border-radius: 5px;
+}
+
+.contact-name {
+	flex: 1;
+	margin-left: 10px;
 }
 
 .contact-item.active {
@@ -840,7 +886,6 @@ body {
 	transition: background-color 0.3s ease;
 }
 
-
 .dialog-content button.apply {
 	background-color: #4caf50;
 	color: white;
@@ -858,5 +903,28 @@ body {
 .dialog-content button.reject:hover {
 	background-color: #e53935;
 }
-
+.red-dot {
+	position: absolute;
+	top: 10px;
+	right: 0;
+	width: 6px;
+	height: 6px;
+	background-color: red;
+	border-radius: 50%;
+}
+.red-dot2 {
+	position: absolute;
+	top: 103px;
+	right: 8px;
+	width: 10px;
+	height: 10px;
+	background-color: red;
+	border-radius: 50%;
+}
+.contact-avatar {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	margin-right: 10px;
+}
 </style>

@@ -2,12 +2,12 @@
 	<div class="auth-container">
 		<h2>登录</h2>
 		<form @submit.prevent="handleLogin">
-			<label for="identifier">用户名/邮箱/手机号:</label>
+			<label for="identifier">邮箱/手机号:</label>
 			<input
 				v-model="identifier"
 				id="identifier"
 				type="text"
-				placeholder="输入用户名/邮箱/手机号"
+				placeholder="输入邮箱/手机号"
 				required
 			/>
 
