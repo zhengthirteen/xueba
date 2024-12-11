@@ -282,4 +282,19 @@ h2 {
 	/* 增加边框，给标题加点装饰 */
 	border-bottom: 2px solid grey;
 }
+.posts-list ul {
+    list-style: none;
+    padding: 0;
+}
+.posts-list li {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+		border-radius: 20px;
+}
+.posts-list li:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
 </style>

@@ -13,22 +13,28 @@
 </template>
 
 <script>
+import { ref, inject } from "vue";
 export default {
 	name: "Sidebar",
-	data() {
-		return {
-			menuItems: [
-				{ title: "首页", link: "/" },
-				{ title: "发布", link: "/post" },
-				{ title: "用户中心", link: "/profile" },
-				{ title: "联系人", link: "/contacts" },
-			],
+
+	setup() {
+		const menuItems = [
+			{ title: "首页", link: "/" },
+			{ title: "发布", link: "/post" },
+			{ title: "用户中心", link: "/profile" },
+			{ title: "联系人", link: "/contacts" },
+		];
+		const router = inject("router");
+		const clearSearch = inject("clearSearch");
+		const navigateTo = (link) => {
+			if (link === "/") {
+				router.push(link);
+				clearSearch();
+			}
+			router.push(link);
 		};
-	},
-	methods: {
-		navigateTo(link) {
-			this.$router.push(link);
-		},
+
+		return { menuItems, navigateTo, clearSearch };
 	},
 };
 </script>

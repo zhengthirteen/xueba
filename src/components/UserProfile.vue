@@ -257,10 +257,10 @@ body {
 
 /* 主内容区 */
 .main {
-	position: fixed;
-	top: 80px;
+	position: relative;
+	margin-top: 20px;
 	/* flex-grow: 1; */
-	width: 80%;
+	width: 80vw;
 	padding: 20px;
 }
 
