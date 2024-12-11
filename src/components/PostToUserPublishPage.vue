@@ -131,6 +131,7 @@ body {
 }
 
 .navbar ul {
+	list-style: none;
 	list-style-type: none;
 	margin: 0;
 	padding: 0;
@@ -259,5 +260,7 @@ h2 {
 	/* 增加边框，给标题加点装饰 */
 	border-bottom: 2px solid grey;
 }
-
+ul {
+	list-style: none;
+}
 </style>

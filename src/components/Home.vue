@@ -14,7 +14,7 @@
 							@click="goToPostDetail(topic.id)"
 						>
 							<h3>{{ topic.title }}</h3>
-							<p>浏览量: {{ topic.postScore }}</p>
+							<p>浏览量: {{ topic.score }}</p>
 						</li>
 					</ul>
 				</div>

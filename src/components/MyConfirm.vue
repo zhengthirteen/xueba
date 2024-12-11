@@ -1,87 +1,86 @@
 <template>
-    <div>
-        <div v-if="visible" class="confirm-box">
-            <div class="confirm-msg">{{ confirmMsg }}</div>
-            <div class="confirm-buttons">
-                <button class="confirm-button" @click="confirm">
-                    {{ confirmButtonText }}
-                </button>
-                <button class="cancel-button" @click="cancel">
-                    {{ cancelButtonText }}
-                </button>
-            </div>
-        </div>
-        <div
-            v-if="showAlert"
-            :class="[
-                'alert-box',
-                { 'alert-success': isTrue, 'alert-failure': !isTrue },
-            ]"
-        >
-            {{ msg }}
-        </div>
-    </div>
+	<div>
+		<div v-if="visible" class="confirm-box">
+			<div class="confirm-msg">{{ confirmMsg }}</div>
+			<div class="confirm-buttons">
+				<button class="confirm-button" @click="confirm">
+					{{ confirmButtonText }}
+				</button>
+				<button class="cancel-button" @click="cancel">
+					{{ cancelButtonText }}
+				</button>
+			</div>
+		</div>
+		<div
+			v-if="showAlert"
+			:class="[
+				'alert-box',
+				{ 'alert-success': isTrue, 'alert-failure': !isTrue },
+			]"
+		>
+			{{ msg }}
+		</div>
+	</div>
 </template>
 
 <script>
 import { ref, watch } from "vue";
 
 export default {
-    name: "MyConfirm",
-    props: {
-        confirmMsg: {
-            type: String,
-            default: "确认操作？",
-        },
-        msg: {
-            type: String,
-            default: "",
-        },
-        isTrue: {
-            type: Boolean,
-            default: false,
-        },
-        confirmButtonText: {
-            type: String,
-            default: "确认",
-        },
-        cancelButtonText: {
-            type: String,
-            default: "取消",
-        },
-    },
-    setup(props, { emit }) {
-        const visible = ref(false);
-        const showAlert = ref(false);
+	name: "MyConfirm",
+	props: {
+		confirmMsg: {
+			type: String,
+			default: "确认操作？",
+		},
+		msg: {
+			type: String,
+			default: "",
+		},
+		isTrue: {
+			type: Boolean,
+			default: false,
+		},
+		confirmButtonText: {
+			type: String,
+			default: "确认",
+		},
+		cancelButtonText: {
+			type: String,
+			default: "取消",
+		},
+	},
+	setup(props, { emit }) {
+		const visible = ref(false);
+		const showAlert = ref(false);
 
-        const confirm = () => {
-            visible.value = false;
-            showAlert.value = true;
-            emit("confirm-result", 1); // 传递确认按钮的值
-            setTimeout(() => {
-                showAlert.value = false;
-            }, 2000);
-        };
+		const confirm = () => {
+			visible.value = false;
+			showAlert.value = true;
+			emit("confirm-result", 1); // 传递确认按钮的值
+			setTimeout(() => {
+				showAlert.value = false;
+			}, 2000);
+		};
 
-        const cancel = () => {
-            visible.value = false;
-            emit("confirm-result", 2); // 传递取消按钮的值
-        };
+		const cancel = () => {
+			visible.value = false;
+			emit("confirm-result", null); // 传递 null 表示取消
+		};
 
-        watch(
-            () => props.confirmMsg,
-            (newConfirmMsg) => {
-                if (newConfirmMsg) {
-                    visible.value = true;
-                }
-            }
-        );
+		watch(
+			() => props.confirmMsg,
+			(newConfirmMsg) => {
+				if (newConfirmMsg) {
+					visible.value = true;
+				}
+			}
+		);
 
-        return { visible, showAlert, confirm, cancel };
-    },
+		return { visible, showAlert, confirm, cancel };
+	},
 };
 </script>
-
 <style scoped>
 .confirm-box {
 	position: fixed;

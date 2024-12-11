@@ -48,26 +48,29 @@ export default {
 		};
 
 		// 提供 showConfirm 方法
-		const showConfirm = (confirmMessage, msg, isTrue, callback) => {
-			confirmMsg.value = "";
-			confirmAlertMsg.value = "";
-			confirmIsTrue.value = false;
-			confirmCallback = callback;
+        const showConfirm = (confirmMessage, msg, isTrue, callback) => {
+            confirmMsg.value = "";
+            confirmAlertMsg.value = "";
+            confirmIsTrue.value = false;
+            confirmCallback = callback;
 
-			setTimeout(() => {
-				confirmMsg.value = confirmMessage;
-				confirmAlertMsg.value = msg;
-				confirmIsTrue.value = isTrue;
-			}, 0);
-		};
+            setTimeout(() => {
+                confirmMsg.value = confirmMessage;
+                confirmAlertMsg.value = msg;
+                confirmIsTrue.value = isTrue;
+            }, 0);
+        };
 
-		// 处理确认结果
-		const handleConfirmResult = (result) => {
-			if (confirmCallback) {
-				confirmCallback(result);
-				confirmCallback = null;
-			}
-		};
+		 // 处理确认结果
+        const handleConfirmResult = (result) => {
+            if (result === 1 && confirmCallback) {
+                confirmCallback(true);
+                confirmCallback = null;
+            } else if (confirmCallback) {
+                confirmCallback(false);
+                confirmCallback = null;
+            }
+        };
 
 		// 提供 showAlert、showConfirm 和 router 供下级组件使用
 		provide("showAlert", showAlert);

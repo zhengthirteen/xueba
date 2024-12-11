@@ -146,7 +146,7 @@ export default {
 				if (res.data.code === 1) {
 					showAlert("好友申请成功！", true);
 				} else {
-					showAlert("好友申请失败，请稍后再试！", false);
+					showAlert("该用户已经是你的好友，无需重复添加", false);
 				}
 			} catch (err) {
 				console.log(err);
