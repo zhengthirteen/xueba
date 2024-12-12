@@ -41,11 +41,14 @@
 				>
 					<img :src="contact.avatarURL" alt="好友头像" class="contact-avatar" />
 					<p>{{ contact.name }}</p>
+
 					<button class="menu-button" @click.stop="goToDetailPage(contact)">
 						<span class="dot"></span>
 						<span class="dot"></span>
 						<span class="dot"></span>
+						<div v-if="contact.hasNewMessage" class="red-dot3"></div>
 					</button>
+					
 				</div>
 			</div>
 
@@ -69,8 +72,8 @@
 							}"
 						>
 							<div class="message-content">
-								<p>{{ message.text }}</p>
-							</div>
+    <p v-html="message.text.replace(/\n/g, '<br>')"></p>
+</div>
 							<div class="message-time">
 								<span>{{ message.time }}</span>
 							</div>
@@ -171,7 +174,12 @@ export default {
 				const response = await axios.post("/api/friend/applyforget", {
 					userID: parseInt(userID, 10),
 				});
-				hasNewFriendRequest.value = response.data.data.length > 0;
+				if (response.data.data.length > 0) {
+					hasNewFriendRequest.value = true;
+					await fetchReceivedRequests();
+				} else {
+					hasNewFriendRequest.value = false;
+				}
 			} catch (error) {
 				console.error("获取好友请求时出错:", error);
 				showAlert("获取好友请求时出错"); // 使用 showAlert 抛出提示
@@ -279,7 +287,7 @@ export default {
 				const message = {
 					msgType: 2,
 					userID: userID,
-					picID: 0, // 假设 picID 与 userID 相同
+					picID: "", // 假设 picID 与 userID 相同
 					relaID: selectedContact.value.friendID,
 					status: 0,
 					msgContent: newMessage.value,
@@ -317,36 +325,120 @@ export default {
 				}
 			}
 		};
+		const lastMessages = ref({});
 
-		// 获取指定联系人的消息
-		const fetchMessages = async (friendID) => {
+		// 修改 fetchMessages 函数
+		const fetchMessages = async (friendID = null) => {
 			const userID = parseInt(localStorage.getItem("user_id"), 10);
 
-			try {
-				const response = await axios.post("/api/friend/getmessage", {
-					userID: userID,
-					friendID: friendID,
-				});
+			if (friendID) {
+				// 获取指定联系人的消息
+				try {
+					const response = await axios.post("/api/friend/getmessage", {
+						userID: userID,
+						friendID: friendID,
+					});
 
-				if (response.status === 200 && response.data.code === 1) {
-					selectedContact.value.messages = response.data.data.map((msg) => ({
-						text: msg.msgContent,
-						time: msg.msgTime,
-						sender: msg.userID === userID ? "me" : "friend",
-					}));
-				} else {
-					showAlert(`获取消息失败: ${response.data.msg}`, false);
+					if (response.status === 200 && response.data.code === 1) {
+						selectedContact.value.messages = response.data.data.map((msg) => ({
+							text: msg.msgContent,
+							time: msg.msgTime,
+							sender: msg.userID === userID ? "me" : "friend",
+						}));
+						// 更新 lastMessages
+						lastMessages.value[friendID] = selectedContact.value.messages;
+					} else {
+						showAlert(`获取消息失败: ${response.data.msg}`, false);
+					}
+				} catch (error) {
+					showAlert(
+						`获取消息错误: ${
+							error.response ? error.response.data.msg : error.message
+						}`,
+						false
+					);
 				}
-			} catch (error) {
-				showAlert(
-					`获取消息错误: ${
-						error.response ? error.response.data.msg : error.message
-					}`,
-					false
-				);
-				// console.log(response.data);
+			} else {
+				// 获取所有联系人的消息
+				try {
+					const responses = await Promise.all(
+						contacts.value.map((contact) =>
+							axios.post("/api/friend/getmessage", {
+								userID: userID,
+								friendID: contact.friendID,
+							})
+						)
+					);
+
+					responses.forEach((response, index) => {
+						if (response.status === 200 && response.data.code === 1) {
+							const newMessages = response.data.data.map((msg) => ({
+								text: msg.msgContent,
+								time: msg.msgTime,
+								sender: msg.userID === userID ? "me" : "friend",
+							}));
+
+							const contact = contacts.value[index];
+							const lastMessage = lastMessages.value[contact.friendID];
+
+							// if (
+							// 	!lastMessage ||
+							// 	JSON.stringify(lastMessage) !== JSON.stringify(newMessages)
+							// ) {
+							// 	contact.hasNewMessage = true;
+							// } else {
+							// 	contact.hasNewMessage = false;
+							// }
+							if (!lastMessage) {
+								lastMessages.value[contact.friendID] = newMessages;
+							} else if (
+								JSON.stringify(lastMessage) !== JSON.stringify(newMessages)
+							) {
+								contact.hasNewMessage = true;
+							} else {
+								contact.hasNewMessage = false;
+							}
+						}
+					});
+				} catch (error) {
+					showAlert(
+						`获取消息错误: ${
+							error.response ? error.response.data.msg : error.message
+						}`,
+						false
+					);
+				}
 			}
 		};
+		// 获取指定联系人的消息
+		// const fetchMessages = async (friendID) => {
+		// 	const userID = parseInt(localStorage.getItem("user_id"), 10);
+
+		// 	try {
+		// 		const response = await axios.post("/api/friend/getmessage", {
+		// 			userID: userID,
+		// 			friendID: friendID,
+		// 		});
+
+		// 		if (response.status === 200 && response.data.code === 1) {
+		// 			selectedContact.value.messages = response.data.data.map((msg) => ({
+		// 				text: msg.msgContent,
+		// 				time: msg.msgTime,
+		// 				sender: msg.userID === userID ? "me" : "friend",
+		// 			}));
+		// 		} else {
+		// 			showAlert(`获取消息失败: ${response.data.msg}`, false);
+		// 		}
+		// 	} catch (error) {
+		// 		showAlert(
+		// 			`获取消息错误: ${
+		// 				error.response ? error.response.data.msg : error.message
+		// 			}`,
+		// 			false
+		// 		);
+		// 		// console.log(response.data);
+		// 	}
+		// };
 
 		const handleKeydown = (event) => {
 			if (event.key === "Enter" && event.shiftKey) {
@@ -486,26 +578,32 @@ export default {
 
 					// 自动发送一条消息给对方
 					const messagePayload = {
-						msg_type: 2,
-						user_id: userID,
-						pic_id: "",
-						rela_id: request.friendID,
-						status: 0,
-						content: `Hi ${request.name}, I accepted your friend request!`, // 自动回复信息
+						msgType: 2,
+						userID: userID,
+						picID: "",
+						relaID: request.friendID,
+						msgStatus: 0,
+						msgContent: `Hi ${request.name}, 我已经同意了你的好友请求，快来和我聊天吧`, // 自动回复信息
 					};
 
-					const messageResponse = await axios.post("/api/friend/sendmessage", messagePayload);
+					const messageResponse = await axios.post(
+						"/api/friend/sendmessage",
+						messagePayload
+					);
 
-					if (messageResponse.status === 200 && messageResponse.data.code === 1) {
-						// const message = {
-						// 	text: messagePayload.content,
-						// 	time: new Date().toLocaleTimeString([], {
-						// 		hour: "2-digit",
-						// 		minute: "2-digit",
-						// 	}),
-						// 	sender: "me",
-						// };
-						console.log("request", message);
+					if (
+						messageResponse.status === 200 &&
+						messageResponse.data.code === 1
+					) {
+						const message = {
+							text: messagePayload.content,
+							time: new Date().toLocaleTimeString([], {
+								hour: "2-digit",
+								minute: "2-digit",
+							}),
+							sender: "me",
+						};
+						// console.log("request", message);
 
 						// 找到接受请求的联系人并将该消息加入联系人聊天记录
 						const contact = contacts.value.find(
@@ -576,12 +674,14 @@ export default {
 			intervalID1 = setInterval(() => {
 				if (selectedContact.value) {
 					fetchMessages(selectedContact.value.friendID);
+				} else {
+					fetchMessages();
 				}
-			}, 10000);
+			}, 500);
 			intervalID2 = setInterval(async () => {
 				await fetchContacts();
 				await checkNewFriendRequests();
-			}, 10000);
+			}, 1000);
 		});
 		onUnmounted(() => {
 			clearInterval(intervalID1);
@@ -706,6 +806,7 @@ body {
 
 .menu-button {
 	background: transparent;
+	position: relative;
 	border: none;
 	color: white;
 	font-size: 24px;
@@ -941,6 +1042,15 @@ body {
 	height: 10px;
 	background-color: red;
 	border-radius: 50%;
+}
+.red-dot3 {
+	position: absolute;
+	right: 1px;
+	width: 10px;
+	height: 10px;
+	background-color: red;
+	border-radius: 50%;
+	transform: translateY(-20px) translateX(7px);
 }
 .contact-avatar {
 	width: 50px;
