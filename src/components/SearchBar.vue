@@ -1,7 +1,7 @@
 <!-- SearchBar.vue -->
 <template>
   <div class="top-bar" :class="{ hidden: isHidden }" ref="topBar">
-    <input type="text" placeholder="搜索..." class="search-bar" v-model="searchQuery" />
+    <input type="text" placeholder="搜索..." class="search-bar" v-model="searchQuery" @keyup.enter="handleSearch" />
     <button class="search-button" @click="handleSearch">搜索</button>
   </div>
 </template>

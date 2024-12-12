@@ -20,11 +20,13 @@ import PostToUser from "../components/PostToUser.vue";
 import PostToUserPublishPage from "../components/PostToUserPublishPage.vue";
 import PostToUserFavoritesPage from "../components/PostToUserFavoritesPage.vue";
 import UpdatePassword from "../components/UpdatePassword.vue";
+import ManagerHome from "../components/ManagerHome.vue";
 
 const routes = [
 	{ path: "/", name: "Home", component: Home },
 	{ path: "/post", name: "PostEditor", component: PostEditor },
 	{ path: "/profile", name: "UserProfile", component: UserProfile },
+	{ path: "/manager", name: "ManagerHome", component: ManagerHome },
 	{
 		path: "/contact/:id/:relationID",
 		name: "contact-detail",

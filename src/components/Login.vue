@@ -20,6 +20,12 @@
 				required
 			/>
 
+			<label for="userType">用户类型:</label>
+			<select v-model="userType" id="userType">
+				<option value="user">普通用户</option>
+				<option value="admin">管理员用户</option>
+			</select>
+
 			<button type="submit">登录</button>
 		</form>
 		<p>
@@ -39,6 +45,7 @@ export default {
 	setup() {
 		const identifier = ref("");
 		const password = ref("");
+		const userType = ref("user");
 		const showAlert = inject("showAlert");
 		const router = inject("router");
 		const showConfirm = inject("showConfirm");
@@ -62,34 +69,56 @@ export default {
 		const handleLogin = async () => {
 			if (t_id) clearTimeout(t_id);
 			t_id = setTimeout(async () => {
-				let type;
-				if (/^\d+$/.test(identifier.value)) {
-					type = 3; // 手机号
-				} else if (identifier.value.includes("@")) {
-					type = 2; // 邮箱
-				} else {
-					type = 1; // 用户名
-				}
-
-				try {
-					const res = await axios.post("/api/login/login", {
-						data: identifier.value,
-						pwd: password.value,
-						type,
-					});
-					if (res.data.code === 1) {
-						showAlert("登录成功！", true);
-						localStorage.setItem("token", res.data.data.jwt);
-						localStorage.setItem("user_id", res.data.data.user_id);
-						setTimeout(() => {
-							router.push("/");
-						}, 800);
+				if (userType.value === "user") {
+					let type;
+					if (/^\d+$/.test(identifier.value)) {
+						type = 3; // 手机号
+					} else if (identifier.value.includes("@")) {
+						type = 2; // 邮箱
 					} else {
-						showAlert("登录失败，请检查用户名或密码！", false);
+						type = 1; // 用户名
 					}
-				} catch (err) {
-					console.log(err);
-					showAlert("登录失败，请稍后再试！", false);
+
+					try {
+						const res = await axios.post("/api/login/login", {
+							data: identifier.value,
+							pwd: password.value,
+							type,
+						});
+						if (res.data.code === 1) {
+							showAlert("登录成功！", true);
+							localStorage.setItem("token", res.data.data.jwt);
+							localStorage.setItem("user_id", res.data.data.user_id);
+							setTimeout(() => {
+								router.push("/");
+							}, 800);
+						} else {
+							showAlert("登录失败，请检查用户名或密码！", false);
+						}
+					} catch (err) {
+						console.log(err);
+						showAlert("登录失败，请稍后再试！", false);
+					}
+				} else if (userType.value === "admin") {
+					try {
+						const res = await axios.post("/api/admin/login", {
+							data: parseInt(identifier.value, 10),
+							pwd: password.value,
+						});
+						if (res.data.code === 1) {
+							showAlert("管理员登录成功！", true);
+							localStorage.setItem("token", res.data.data.jwt);
+							localStorage.setItem("admin_id", res.data.data.adminID);
+							setTimeout(() => {
+								router.push("/manager");
+							}, 800);
+						} else {
+							showAlert("管理员登录失败，请检查管理员ID或密码！", false);
+						}
+					} catch (err) {
+						console.log(err);
+						showAlert("管理员登录失败，请稍后再试！", false);
+					}
 				}
 			}, 200);
 		};
@@ -97,6 +126,7 @@ export default {
 		return {
 			password,
 			identifier,
+			userType,
 			test_handleLogin,
 			handleLogin,
 		};
@@ -131,7 +161,8 @@ export default {
 .auth-container label {
 	margin-top: 10px;
 }
-.auth-container input {
+.auth-container input,
+.auth-container select {
 	padding: 10px;
 	margin-top: 5px;
 	margin-bottom: 10px;
