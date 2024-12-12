@@ -1,6 +1,5 @@
 <template>
 	<div class="home">
-		<Sidebar />
 		<div class="main-content">
 			<SearchBar :onSearch="handleSearch" />
 			<div class="content">
@@ -26,35 +25,25 @@
 				</div>
 			</div>
 		</div>
-		<img
-			:src="avatar"
-			alt="用户头像"
-			class="user-avatar"
-			@click="goToProfile"
-		/>
 	</div>
 </template>
 
 <script>
-import { ref, inject, onMounted, provide } from "vue";
+import { ref, inject, provide } from "vue";
 import PopularTopics from "./PopularTopics.vue";
 import { useUserProfile } from "../hooks/useUserProfile.js";
 import SearchBar from "./SearchBar.vue";
-import Sidebar from "./Sidebar.vue";
 import axios from "../utils/axios";
-import { useUserAvatar } from "../hooks/useUserAvatar";
 
 export default {
   name: "Home",
   components: {
     PopularTopics,
     SearchBar,
-    Sidebar,
   },
   setup() {
     const { user } = useUserProfile();
     const router = inject("router");
-    const { avatar, getUserAvatar } = useUserAvatar();
     const searchResults = ref([]);
     const isSearching = ref(false);
     const searchQuery = ref("");
@@ -99,13 +88,9 @@ export default {
       });
     };
 
-    onMounted(() => {
-      getUserAvatar(localStorage.getItem("user_id"));
-    });
-
     provide("clearSearch", clearSearch);
 
-    return { user, goToProfile, avatar, handleSearch, searchResults, isSearching, goToPostDetail, clearSearch, searchQuery };
+    return { user, goToProfile, handleSearch, searchResults, isSearching, goToPostDetail, clearSearch, searchQuery };
   },
 };
 </script>
@@ -126,18 +111,6 @@ export default {
 	padding: 20px;
 }
 
-.user-avatar {
-	width: 70px;
-	height: 70px;
-	border-radius: 50%;
-	cursor: pointer;
-	position: fixed;
-	top: 50px;
-	right: 50px;
-}
-.user-avatar:hover {
-	opacity: 0.8;
-}
 .content {
 	width: 100%;
 	display: flex;

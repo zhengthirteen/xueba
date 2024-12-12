@@ -1,14 +1,17 @@
 <template>
 	<div class="popular-topics">
 		<h2>热门帖子</h2>
-		<ul>
+		<ul class="post-list">
 			<li
 				v-for="topic in topics"
 				:key="topic.id"
 				@click="goToPostDetail(topic.id)"
+				class="post-item"
 			>
-				<h3>{{ topic.title }}</h3>
-				<p>浏览量: {{ topic.score }}</p>
+				<div class="post-header">
+					<h3 class="post-title">{{ topic.title }}</h3>
+					<p class="post-score">浏览量: {{ topic.score }}</p>
+				</div>
 			</li>
 		</ul>
 	</div>
@@ -42,33 +45,9 @@ export default {
 				params: { postID: id },
 			});
 		};
-		const test_getTopics = () => {
-			topics.value = [
-				{
-					title: "china",
-					score: 1,
-					id: 16,
-				},
-				{
-					title: "这是一个帖子标题",
-					score: 0,
-					id: 13,
-				},
-				{
-					title: "这是一个测试帖子标题",
-					score: 0,
-					id: 15,
-				},
-				{
-					title: "chinese",
-					score: 0,
-					id: 14,
-				},
-			];
-		};
+		
 		onMounted(() => {
-			// test_getTopics(); //测试用
-			getTopics(); //正式用
+			getTopics(); 
 		});
 
 		return {
@@ -80,17 +59,36 @@ export default {
 </script>
 
 <style scoped>
-.popular-topics ul {
+.post-list {
 	list-style: none;
 	padding: 0;
+	margin: 0;
 }
-.popular-topics li {
-	border: 1px solid #ddd;
-	padding: 10px;
+.post-item {
+	width: 100%;
 	margin: 10px 0;
-}
-.popular-topics li:hover {
-	background-color: #f0f0f0;
+	padding: 15px;
+	border-radius: 5px;
 	cursor: pointer;
+	transition: background-color 0.3s, transform 0.3s;
+	box-sizing: border-box;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	background-color: #f9f9f9;
+}
+.post-item:hover {
+	background-color: #f1f1f1;
+	transform: translateY(-5px);
+}
+.post-header {
+	display: flex;
+	flex-direction: column;
+}
+.post-title {
+	font-size: 1.2em;
+	margin: 0;
+}
+.post-score {
+	color: #888;
+	margin-top: 5px;
 }
 </style>
