@@ -49,13 +49,16 @@
 					>
 						<img :src="transmitImage" alt="转发" />
 					</button>
+					<!-- 新增举报按钮 -->
+					<button @click="openReportDialog">
+						<img src="@/assets/warning.png" alt="举报" />
+					</button>
 				</div>
 
 				<div v-if="shareMessage" class="share-message">
 					<p>{{ shareMessage }}</p>
 				</div>
 
-				<!-- 评论输入框 -->
 				<!-- 评论输入框 -->
 				<div class="comment-input">
 					<textarea
@@ -93,6 +96,10 @@
 							<p class="comment-text">{{ comment.msgContent }}</p>
 							<p class="comment-time">{{ comment.msgTime }}</p>
 						</div>
+						<!-- 新增评论举报按钮 -->
+						<button class="comment-report-button" @click="openCommentReportDialog(comment.msgID)">
+							<img src="@/assets/warning.png" alt="举报" />
+						</button>
 					</li>
 				</ul>
 			</div>
@@ -102,6 +109,30 @@
 	<button class="return-button" @click="goBack">
 		<img src="@/assets/return.png" alt="返回" />
 	</button>
+
+	<!-- 举报弹窗 -->
+	<div v-if="showReportDialog" class="report-dialog">
+		<div class="report-dialog-content">
+			<h3>举报帖子</h3>
+			<textarea v-model="reportContent" placeholder="请输入举报原因..."></textarea>
+			<div class="report-dialog-actions">
+				<button @click="submitReport">提交</button>
+				<button @click="showReportDialog = false">取消</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- 评论举报弹窗 -->
+	<div v-if="showCommentReportDialog" class="report-dialog">
+		<div class="report-dialog-content">
+			<h3>举报评论</h3>
+			<textarea v-model="commentReportContent" placeholder="请输入举报原因..."></textarea>
+			<div class="report-dialog-actions">
+				<button @click="submitCommentReport">提交</button>
+				<button @click="showCommentReportDialog = false">取消</button>
+			</div>
+		</div>
+	</div>
 </template>
 
 <script>
@@ -130,6 +161,11 @@ export default {
 		const authorID = ref("");
 		const isAvatarHovered = ref(false);
 		const isCommentAvatarHovered = ref({});
+		const showReportDialog = ref(false);
+		const showCommentReportDialog = ref(false);
+		const reportContent = ref("");
+		const commentReportContent = ref("");
+		const commentReportMsgID = ref(null);
 
 		const showAlert = inject("showAlert");
 		const route = useRoute();
@@ -251,6 +287,53 @@ export default {
 			router.go(-1);
 		}
 
+		function openReportDialog() {
+			reportContent.value = ""; // 清空举报内容
+			showReportDialog.value = true;
+		}
+
+		async function submitReport() {
+			try {
+				const response = await axios.post("/api/post/reportpost", {
+					userID: localStorage.getItem("user_id"),
+					msgID: postID,
+					content: reportContent.value,
+				});
+				if (response.data.code === 1) {
+					showAlert("举报成功！", true);
+					showReportDialog.value = false;
+				} else {
+					showAlert(`举报失败: ${response.data.msg}`, false);
+				}
+			} catch (error) {
+				showAlert("举报失败，请稍后重试！", false);
+			}
+		}
+
+		function openCommentReportDialog(msgID) {
+			commentReportContent.value = ""; // 清空评论举报内容
+			commentReportMsgID.value = msgID;
+			showCommentReportDialog.value = true;
+		}
+
+		async function submitCommentReport() {
+			try {
+				const response = await axios.post("/api/post/reportpost", {
+					userID: localStorage.getItem("user_id"),
+					msgID: commentReportMsgID.value,
+					content: commentReportContent.value,
+				});
+				if (response.data.code === 1) {
+					showAlert("举报成功！", true);
+					showCommentReportDialog.value = false;
+				} else {
+					showAlert(`举报失败: ${response.data.msg}`, false);
+				}
+			} catch (error) {
+				showAlert("举报失败，请稍后重试！", false);
+			}
+		}
+
 		return {
 			post,
 			isLiked,
@@ -278,6 +361,14 @@ export default {
 			isCommentAvatarHovered,
 			goToPostToUser,
 			goToUserPage,
+			showReportDialog,
+			reportContent,
+			submitReport,
+			showCommentReportDialog,
+			commentReportContent,
+			openCommentReportDialog,
+			submitCommentReport,
+			openReportDialog,
 		};
 	},
 };
@@ -398,6 +489,7 @@ h2 {
 	display: flex;
 	align-items: flex-start;
 	margin-bottom: 20px;
+	position: relative;
 }
 
 .user-avatar {
@@ -487,5 +579,96 @@ h2 {
 .return-button img {
 	width: 30px;
 	height: 30px;
+}
+
+/* 举报弹窗样式 */
+.report-dialog {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.report-dialog-content {
+	background-color: white;
+	padding: 20px;
+	border-radius: 8px;
+	width: 400px;
+	max-width: 90%;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	animation: fadeIn 0.3s ease-in-out;
+	position: relative;
+}
+
+.report-dialog-content h3 {
+	margin-top: 0;
+	font-size: 24px;
+	color: #333;
+	text-align: center;
+}
+
+.report-dialog-content textarea {
+	width: 100%;
+	height: 100px;
+	padding: 10px;
+	margin-bottom: 10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	resize: none;
+	font-size: 16px;
+}
+
+.report-dialog-actions {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.report-dialog-actions button {
+	margin-left: 10px;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+.report-dialog-actions button:first-child {
+	background-color: #007bff;
+	color: white;
+}
+
+.report-dialog-actions button:last-child {
+	background-color: #ccc;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+/* 评论举报按钮样式 */
+.comment-report-button {
+	position: absolute;
+	right: 0;
+	top: 10px;
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+}
+
+.comment-report-button img {
+	width: 20px;
+	height: 20px;
 }
 </style>
