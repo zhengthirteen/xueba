@@ -1,7 +1,7 @@
 <template>
   <div class="section-topics">
     <div v-for="(topics, index) in allTopics" :key="index" class="section">
-      <h2>{{ getSectionTitle(index + 1) }}</h2>
+      <h2 @click="showTagHomeComponent(index + 1)">{{ getSectionTitle(index + 1) }}</h2>
       <ul class="post-list">
         <li
           v-for="topic in topics"
@@ -31,7 +31,7 @@ import { onMounted, ref, inject } from "vue";
 
 export default {
   name: "SectionTopics",
-  setup() {
+  setup(props, { emit }) {
     const allTopics = ref([]);
     const showAlert = inject("showAlert");
     const router = inject("router");
@@ -81,6 +81,10 @@ export default {
       });
     };
 
+    const showTagHomeComponent = (tagID) => {
+      emit("showTagHome", tagID);
+    };
+
     onMounted(() => {
       getTopics();
     });
@@ -89,6 +93,7 @@ export default {
       allTopics,
       goToPostDetail,
       getSectionTitle,
+      showTagHomeComponent,
     };
   },
 };
@@ -153,5 +158,14 @@ export default {
 .post-score {
   color: #555;
   margin: 5px 0;
+}
+h2 {
+  cursor: pointer;
+  transition: color 0.3s, transform 0.3s;
+}
+
+h2:hover {
+  color: #007bff;
+  transform: scale(1.03);
 }
 </style>

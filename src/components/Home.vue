@@ -1,46 +1,47 @@
 <template>
-    <div class="home">
-        <Sidebar />
-        <div class="main-content">
-            <SearchBar :onSearch="handleSearch" />
-            <div class="content">
-                <PopularTopics v-if="!isSearching" />
-                <div v-else class="search-results">
-                    <h2>搜索结果</h2>
-                    <ul v-if="searchResults.length > 0" class="post-list">
-                        <li
-                            v-for="topic in searchResults"
-                            :key="topic.id"
-                            @click="goToPostDetail(topic.id)"
-                            class="post-item"
-                        >
-                            <div class="post-header">
-                                <div class="author-info">
-                                    <img :src="topic.picURL" alt="作者头像" class="author-avatar" />
-                                    <p class="post-author">{{ topic.userName }}</p>
-                                </div>
-                                <div class="post-info">
-                                    <h3 class="post-title">{{ topic.title }}</h3>
-                                    <p class="post-score">浏览量: {{ topic.score }}</p>
-                                    <p class="post-tag">标签: {{ getTagName(topic.tagID) }}</p>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                    <div v-else class="no-results">
-                        <p class="no-results-text">抱歉，没有找到匹配的结果。</p>
-                    </div>
+  <div class="home">
+    <Sidebar />
+    <div class="main-content" v-if="!showTagHome">
+      <SearchBar :onSearch="handleSearch" />
+      <div class="content">
+        <PopularTopics v-if="!isSearching" />
+        <div v-else class="search-results">
+          <h2>搜索结果</h2>
+          <ul v-if="searchResults.length > 0" class="post-list">
+            <li
+              v-for="topic in searchResults"
+              :key="topic.id"
+              @click="goToPostDetail(topic.id)"
+              class="post-item"
+            >
+              <div class="post-header">
+                <div class="author-info">
+                  <img :src="topic.picURL" alt="作者头像" class="author-avatar" />
+                  <p class="post-author">{{ topic.userName }}</p>
                 </div>
-                <SectionTopics v-if="!isSearching" />
-            </div>
+                <div class="post-info">
+                  <h3 class="post-title">{{ topic.title }}</h3>
+                  <p class="post-score">浏览量: {{ topic.score }}</p>
+                  <p class="post-tag">标签: {{ getTagName(topic.tagID) }}</p>
+                </div>
+              </div>
+            </li>
+          </ul>
+          <div v-else class="no-results">
+            <p class="no-results-text">抱歉，没有找到匹配的结果。</p>
+          </div>
         </div>
-        <img
-            :src="avatar"
-            alt="用户头像"
-            class="user-avatar"
-            @click="goToProfile"
-        />
+        <SectionTopics v-if="!isSearching" @showTagHome="showTagHomeComponent" />
+      </div>
     </div>
+    <TagHome v-if="showTagHome" :tagID="selectedTagID" />
+    <img
+      :src="avatar"
+      alt="用户头像"
+      class="user-avatar"
+      @click="goToProfile"
+    />
+  </div>
 </template>
 
 <script>
@@ -52,15 +53,16 @@ import Sidebar from "./Sidebar.vue";
 import axios from "../utils/axios";
 import { useUserAvatar } from "../hooks/useUserAvatar";
 import SectionTopics from "./SectionTopics.vue";
-import { parse } from "vue/compiler-sfc";
+import TagHome from "./TagHome.vue";
 
 export default {
   name: "Home",
   components: {
     PopularTopics,
     SearchBar,
-        Sidebar,
-        SectionTopics
+    Sidebar,
+    SectionTopics,
+    TagHome,
   },
   setup() {
     const { user } = useUserProfile();
@@ -69,12 +71,14 @@ export default {
     const searchResults = ref([]);
     const isSearching = ref(false);
     const searchQuery = ref("");
+    const showTagHome = ref(false);
+    const selectedTagID = ref(null);
 
     const goToProfile = () => {
       router.push("/profile");
     };
 
-    const handleSearch = async (query,tmp_type) => {
+    const handleSearch = async (query, tmp_type) => {
       if (!query) {
         isSearching.value = false;
         return;
@@ -111,9 +115,10 @@ export default {
     };
 
     const clearSearch = () => {
-      searchQuery.value = "";
+			searchQuery.value = "";
+			showTagHome.value=false
       handleSearch("");
-    };
+		};
 
     const goToPostDetail = (id) => {
       router.push({
@@ -133,119 +138,138 @@ export default {
       return tagNames[tagID] || "未知标签";
     };
 
+    const showTagHomeComponent = (tagID) => {
+      selectedTagID.value = tagID;
+      showTagHome.value = true;
+    };
+
     onMounted(() => {
       getUserAvatar(localStorage.getItem("user_id"));
     });
 
     provide("clearSearch", clearSearch);
 
-    return { user, goToProfile, avatar, handleSearch, searchResults, isSearching, goToPostDetail, clearSearch, searchQuery, getTagName };
+    return {
+      user,
+      goToProfile,
+      avatar,
+      handleSearch,
+      searchResults,
+      isSearching,
+      goToPostDetail,
+      clearSearch,
+      searchQuery,
+      getTagName,
+      showTagHome,
+      selectedTagID,
+      showTagHomeComponent,
+    };
   },
 };
 </script>
 
 <style scoped>
 .home {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    margin: 0 auto;
-    width: 75vw;
-    margin-left: 10vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin: 0 auto;
+  width: 75vw;
+  margin-left: 10vw;
 }
 
 .main-content {
-    position: relative;
-    width: 100%;
-    padding: 20px;
+  position: relative;
+  width: 100%;
+  padding: 20px;
 }
 
 .user-avatar {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    cursor: pointer;
-    position: fixed;
-    top: 50px;
-    right: 50px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  cursor: pointer;
+  position: fixed;
+  top: 50px;
+  right: 50px;
 }
 .user-avatar:hover {
-    opacity: 0.8;
+  opacity: 0.8;
 }
 .content {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    margin-top: 50px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-top: 50px;
 }
 
 .content > * {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .search-results ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 .search-results li {
-    width: 48%;
-    margin: 10px 0;
-    padding: 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-    box-sizing: border-box;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: #f9f9f9;
+  width: 48%;
+  margin: 10px 0;
+  padding: 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  box-sizing: border-box;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9;
 }
 .search-results li:hover {
-    background-color: #f1f1f1;
-    transform: translateY(-5px);
+  background-color: #f1f1f1;
+  transform: translateY(-5px);
 }
 .post-header {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 .author-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 130px;
-    margin-right: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 130px;
+  margin-right: 40px;
 }
 .author-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    margin-bottom: 5px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-bottom: 5px;
 }
 .post-author {
-    color: #555;
+  color: #555;
 }
 .post-info {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 .post-title {
-    font-size: 1.5em;
-    margin: 0;
-    font-weight: bold;
+  font-size: 1.5em;
+  margin: 0;
+  font-weight: bold;
 }
 .post-score, .post-tag {
-    color: #555;
-    margin: 5px 0;
+  color: #555;
+  margin: 5px 0;
 }
 .no-results {
-    text-align: center;
-    margin-top: 20px;
+  text-align: center;
+  margin-top: 20px;
 }
 .no-results-text {
-    font-size: 1.2em;
-    color: #555;
+  font-size: 1.2em;
+  color: #555;
 }
 </style>

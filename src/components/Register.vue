@@ -173,7 +173,7 @@ export default {
 							router.push("/login");
 						}, 800);
 					} else {
-						showAlert("该电话已注册！", false);
+						showAlert(res.data.msg, false);
 					}
 				} catch (error) {
 					showAlert("注册失败，请稍后再试！", false);

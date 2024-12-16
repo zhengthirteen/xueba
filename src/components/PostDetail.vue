@@ -312,9 +312,10 @@ export default {
 		}
 		async function submitReport() {
 			try {
+				console.log(post.value.postDTO.msgID);			
 				const response = await axios.post("/api/post/reportpost", {
 					userID: localStorage.getItem("user_id"),
-					msgID: postID,
+					msgID: post.value.postDTO.msgID,
 					content: reportContent.value,
 				});
 				if (response.data.code === 1) {

@@ -23,16 +23,23 @@ import UpdatePassword from "../components/UpdatePassword.vue";
 import ManagerHome from "../components/ManagerHome.vue";
 import ReportDetail from "../components/ReportDetail.vue";
 import ManagerUser from "../components/ManagerUser.vue";
+import TagHome from "../components/TagHome.vue";
 
 const routes = [
 	{ path: "/", name: "Home", component: Home },
+	{
+		path: "/tag/:tagID",
+		component: TagHome,
+		name: "TagHome",
+		props: true,
+	},
 	{ path: "/post", name: "PostEditor", component: PostEditor },
 	{ path: "/profile", name: "UserProfile", component: UserProfile },
 	{ path: "/manager", name: "ManagerHome", component: ManagerHome },
 	{
-		path: '/manager-user',
-		name: 'ManagerUser',
-		component: ManagerUser
+		path: "/manager-user",
+		name: "ManagerUser",
+		component: ManagerUser,
 	},
 	{
 		path: "/contact/:id/:relationID",
