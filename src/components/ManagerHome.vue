@@ -77,7 +77,7 @@ import { ref, inject, provide, onMounted, onUnmounted, computed } from "vue";
 import axios from "../utils/axios";
 
 export default {
-  name: "Home",
+  name: "ManagerHome",
   setup() {
     const router = inject("router");
     const showAlert = inject("showAlert");
@@ -93,7 +93,7 @@ export default {
 
     const fetchReportList = async () => {
       try {
-        const res = await axios.post("/api/backstage/getreportlist");
+        const res = await axios.get("/api/backstage/getreportlist");
         if (res.data.code === 1) {
           reportList.value = res.data.data;
         } else {
@@ -177,8 +177,7 @@ export default {
     };
 
     const showDetail = (report) => {
-      selectedReport.value = report;
-      isDetailVisible.value = true;
+      router.push({ name: "ReportDetail", params: { msgID: report.msgID } });
     };
 
     const closeDetail = () => {
@@ -193,15 +192,15 @@ export default {
       try {
         const adminID = localStorage.getItem("admin_id");
         const res = await axios.post("/api/backstage/reporthandle", {
-          reportID: report.reportID,
           msgStatus: msgStatus,
-          adminID: adminID
+					adminID: adminID,
+					msgID: report.msgID,	
         });
         if (res.data.code === 1) {
-          showAlert("操作成功: " + res.data.msg, true);
+          showAlert("操作成功", true);
           fetchReportList();
         } else {
-          showAlert("操作失败: " + res.data.msg, false);
+          showAlert("操作失败" , false);
         }
       } catch (error) {
         showAlert("请求操作失败: " + error, false);
