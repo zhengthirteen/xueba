@@ -168,7 +168,7 @@ export default {
 	margin-bottom: 10px;
 	border: 1px solid #ddd;
 	border-radius: 5px;
-	width: 90%;
+	width: 100%;
 }
 .auth-container button {
 	padding: 10px;
@@ -178,6 +178,7 @@ export default {
 	border-radius: 5px;
 	cursor: pointer;
 	width: 100%;
+	margin-top: 15px;
 }
 .auth-container p {
 	text-align: center;
