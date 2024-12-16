@@ -349,6 +349,53 @@ export default {
 			}
 		}
 
+		function openReportDialog() {
+			reportContent.value = ""; // 清空举报内容
+			showReportDialog.value = true;
+		}
+
+		async function submitReport() {
+			try {
+				const response = await axios.post("/api/post/reportpost", {
+					userID: localStorage.getItem("user_id"),
+					msgID: postID,
+					content: reportContent.value,
+				});
+				if (response.data.code === 1) {
+					showAlert("举报成功！", true);
+					showReportDialog.value = false;
+				} else {
+					showAlert(`举报失败: ${response.data.msg}`, false);
+				}
+			} catch (error) {
+				showAlert("举报失败，请稍后重试！", false);
+			}
+		}
+
+		function openCommentReportDialog(msgID) {
+			commentReportContent.value = ""; // 清空评论举报内容
+			commentReportMsgID.value = msgID;
+			showCommentReportDialog.value = true;
+		}
+
+		async function submitCommentReport() {
+			try {
+				const response = await axios.post("/api/post/reportpost", {
+					userID: localStorage.getItem("user_id"),
+					msgID: commentReportMsgID.value,
+					content: commentReportContent.value,
+				});
+				if (response.data.code === 1) {
+					showAlert("举报成功！", true);
+					showCommentReportDialog.value = false;
+				} else {
+					showAlert(`举报失败: ${response.data.msg}`, false);
+				}
+			} catch (error) {
+				showAlert("举报失败，请稍后重试！", false);
+			}
+		}
+
 		return {
 			post,
 			isLiked,
@@ -671,9 +718,5 @@ h2 {
 	background-color: transparent;
 	border: none;
 	cursor: pointer;
-}
-.comment-report-button img {
-	width: 20px;
-	height: 20px;
 }
 </style>
