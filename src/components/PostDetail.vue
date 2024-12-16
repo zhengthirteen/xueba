@@ -10,19 +10,20 @@
 				<div class="post-header">
 					<h2>{{ post.postDTO.postTitle }}</h2>
 					<div class="author-info">
-						<img 
-							:src="authorAvatar" 
-							alt="作者头像" 
-							class="author-avatar" 
-							@mouseenter="handleAvatarMouseenter" 
-							@mouseleave="handleAvatarMouseleave" 
+						<img
+							:src="authorAvatar"
+							alt="作者头像"
+							class="author-avatar"
+							@mouseenter="handleAvatarMouseenter"
+							@mouseleave="handleAvatarMouseleave"
 							@click="goToPostToUser"
 							:class="{ 'avatar-hover': isAvatarHovered }"
 						/>
-						<p class="author-name">{{ authorName }}</p>			
+						<p class="author-name">{{ authorName }}</p>
 					</div>
 					<p class="author-id">作者ID：{{ authorID }}</p>
 					<p class="date">发布于：{{ post.postDTO.createTime }}</p>
+					<p class="date">标签：{{ getTagName(post.postDTO.tagID) }}</p>
 					<p class="date">浏览量：{{ post.postDTO.postScore }}</p>
 				</div>
 
@@ -98,7 +99,10 @@
 							<p class="comment-time">{{ comment.msgTime }}</p>
 						</div>
 						<!-- 新增评论举报按钮 -->
-						<button class="comment-report-button" @click="openCommentReportDialog(comment.msgID)">
+						<button
+							class="comment-report-button"
+							@click="openCommentReportDialog(comment.msgID)"
+						>
 							<img src="@/assets/warning.png" alt="举报" />
 						</button>
 					</li>
@@ -110,24 +114,28 @@
 	<button class="return-button" @click="goBack">
 		<img src="@/assets/return.png" alt="返回" />
 	</button>
-
 	<!-- 举报弹窗 -->
 	<div v-if="showReportDialog" class="report-dialog">
 		<div class="report-dialog-content">
 			<h3>举报帖子</h3>
-			<textarea v-model="reportContent" placeholder="请输入举报原因..."></textarea>
+			<textarea
+				v-model="reportContent"
+				placeholder="请输入举报原因..."
+			></textarea>
 			<div class="report-dialog-actions">
 				<button @click="submitReport">提交</button>
 				<button @click="showReportDialog = false">取消</button>
 			</div>
 		</div>
 	</div>
-
 	<!-- 评论举报弹窗 -->
 	<div v-if="showCommentReportDialog" class="report-dialog">
 		<div class="report-dialog-content">
 			<h3>举报评论</h3>
-			<textarea v-model="commentReportContent" placeholder="请输入举报原因..."></textarea>
+			<textarea
+				v-model="commentReportContent"
+				placeholder="请输入举报原因..."
+			></textarea>
 			<div class="report-dialog-actions">
 				<button @click="submitCommentReport">提交</button>
 				<button @click="showCommentReportDialog = false">取消</button>
@@ -167,10 +175,17 @@ export default {
 		const reportContent = ref("");
 		const commentReportContent = ref("");
 		const commentReportMsgID = ref(null);
-
 		const showAlert = inject("showAlert");
 		const route = useRoute();
 		const postID = route.params.postID;
+		const tagNames = {
+			1: "校园学习",
+			2: "打听求助",
+			3: "日常趣事",
+			4: "恋爱交友",
+			5: "资料分享",
+		};
+		const getTagName = (tagID) => tagNames[tagID] || "未知标签";
 
 		const {
 			isLiked,
@@ -203,9 +218,7 @@ export default {
 					authorName.value = post.value.postDTO.userName;
 					authorID.value = post.value.postDTO.userID;
 					console.log(1);
-					
-					
-					
+
 					const picResponse = await axios.post("/api/source/picture", {
 						picID: post.value.postDTO.picID,
 						status: 0,
@@ -250,16 +263,22 @@ export default {
 			isAvatarHovered.value = false;
 		}
 		function handleCommentAvatarMouseenter(msgID) {
-			isCommentAvatarHovered.value = { ...isCommentAvatarHovered.value, [msgID]: true };
+			isCommentAvatarHovered.value = {
+				...isCommentAvatarHovered.value,
+				[msgID]: true,
+			};
 		}
 		function handleCommentAvatarMouseleave(msgID) {
-			isCommentAvatarHovered.value = { ...isCommentAvatarHovered.value, [msgID]: false };
+			isCommentAvatarHovered.value = {
+				...isCommentAvatarHovered.value,
+				[msgID]: false,
+			};
 		}
 		function goToPostToUser() {
-			router.push({ name: 'PostToUser', params: { userID: authorID.value } });
+			router.push({ name: "PostToUser", params: { userID: authorID.value } });
 		}
 		function goToUserPage(userID) {
-			router.push({ name: 'PostToUser', params: { userID } });
+			router.push({ name: "PostToUser", params: { userID } });
 		}
 
 		onMounted(() => {
@@ -287,12 +306,10 @@ export default {
 		function goBack() {
 			router.go(-1);
 		}
-
 		function openReportDialog() {
 			reportContent.value = ""; // 清空举报内容
 			showReportDialog.value = true;
 		}
-
 		async function submitReport() {
 			try {
 				const response = await axios.post("/api/post/reportpost", {
@@ -310,13 +327,11 @@ export default {
 				showAlert("举报失败，请稍后重试！", false);
 			}
 		}
-
 		function openCommentReportDialog(msgID) {
 			commentReportContent.value = ""; // 清空评论举报内容
 			commentReportMsgID.value = msgID;
 			showCommentReportDialog.value = true;
 		}
-
 		async function submitCommentReport() {
 			try {
 				const response = await axios.post("/api/post/reportpost", {
@@ -362,6 +377,7 @@ export default {
 			isCommentAvatarHovered,
 			goToPostToUser,
 			goToUserPage,
+			getTagName,
 			showReportDialog,
 			reportContent,
 			submitReport,
@@ -581,7 +597,6 @@ h2 {
 	width: 30px;
 	height: 30px;
 }
-
 /* 举报弹窗样式 */
 .report-dialog {
 	position: fixed;
@@ -594,7 +609,6 @@ h2 {
 	justify-content: center;
 	align-items: center;
 }
-
 .report-dialog-content {
 	background-color: white;
 	padding: 20px;
@@ -605,14 +619,12 @@ h2 {
 	animation: fadeIn 0.3s ease-in-out;
 	position: relative;
 }
-
 .report-dialog-content h3 {
 	margin-top: 0;
 	font-size: 24px;
 	color: #333;
 	text-align: center;
 }
-
 .report-dialog-content textarea {
 	width: 100%;
 	height: 100px;
@@ -623,12 +635,10 @@ h2 {
 	resize: none;
 	font-size: 16px;
 }
-
 .report-dialog-actions {
 	display: flex;
 	justify-content: flex-end;
 }
-
 .report-dialog-actions button {
 	margin-left: 10px;
 	padding: 10px 20px;
@@ -637,16 +647,13 @@ h2 {
 	cursor: pointer;
 	font-size: 16px;
 }
-
 .report-dialog-actions button:first-child {
 	background-color: #007bff;
 	color: white;
 }
-
 .report-dialog-actions button:last-child {
 	background-color: #ccc;
 }
-
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -657,7 +664,6 @@ h2 {
 		transform: scale(1);
 	}
 }
-
 /* 评论举报按钮样式 */
 .comment-report-button {
 	position: absolute;
@@ -667,7 +673,6 @@ h2 {
 	border: none;
 	cursor: pointer;
 }
-
 .comment-report-button img {
 	width: 20px;
 	height: 20px;

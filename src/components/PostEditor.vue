@@ -19,6 +19,17 @@
 						/>
 					</div>
 					<div class="form-group">
+						<label for="tag">标签</label>
+						<select id="tag" v-model="postTag" required>
+							<option value="" disabled selected>请选择标签</option>
+							<option value="1">校园学习</option>
+							<option value="2">打听求助</option>
+							<option value="3">日常趣事</option>
+							<option value="4">恋爱交友</option>
+							<option value="5">资料分享</option>
+						</select>
+					</div>
+					<div class="form-group">
 						<label for="content">内容</label>
 						<textarea
 							id="content"
@@ -91,10 +102,13 @@ export default {
 		const isImageUploadVisible = ref(false);
 		const isEmojiPickerVisible = ref(false);
 		const imageUrl = ref(""); // 存储图片URL
+		const postTag = ref(""); // 添加 postTag 变量
 
 		// 发布帖子函数
 		const submitPost = async () => {
 			try {
+				console.log(postTag.value);
+				
 				let uploadedImageUrl = imageUrl.value;
 				if (uploadedImageUrl) {
 					const formData = new FormData();
@@ -120,7 +134,7 @@ export default {
 					}
 				}
 
-				const response = await axios.post("/api/post/publishpost", {
+				const response = await axios.post("/api/post/pubpost", {
 					pdto: {
 						userID: userID,
 						postTitle: postTitle.value,
@@ -132,10 +146,13 @@ export default {
 					picdto: {
 						url: uploadedImageUrl || "",
 					},
+					tagid: parseInt(postTag.value),
 				});
 
 				if (response.data.code === 1) {
 					showAlert("帖子发布成功！", true);
+					console.log(postTag.value);
+					
 					router.push("/"); // 发布成功后跳转到主页或其他页面
 				} else {
 					showAlert("发布失败，请检查是否有违规内容，请稍后再试！", false);
@@ -185,6 +202,7 @@ export default {
 			handleImageUpload,
 			insertEmoji,
 			imageUrl,
+			postTag,
 		};
 	},
 };
@@ -343,5 +361,15 @@ button[type="button"] {
 	.emoji-picker button {
 		font-size: 18px;
 	}
+}
+/* 下拉框样式 */
+select {
+	width: 100%;
+	padding: 12px;
+	font-size: 16px;
+	margin-top: 5px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	box-sizing: border-box;
 }
 </style>

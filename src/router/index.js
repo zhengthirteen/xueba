@@ -21,6 +21,7 @@ import PostToUserPublishPage from "../components/PostToUserPublishPage.vue";
 import PostToUserFavoritesPage from "../components/PostToUserFavoritesPage.vue";
 import UpdatePassword from "../components/UpdatePassword.vue";
 import ManagerHome from "../components/ManagerHome.vue";
+import ReportDetail from "../components/ReportDetail.vue";
 
 const routes = [
 	{ path: "/", name: "Home", component: Home },
@@ -34,20 +35,20 @@ const routes = [
 		props: true,
 	},
 	{
-		path: '/user/:userID',
-		name: 'PostToUser',
-		component: PostToUser, 
+		path: "/user/:userID",
+		name: "PostToUser",
+		component: PostToUser,
 	},
 	{
-		path: '/Publish/:userID',
-		name: 'PostToUserPublishPage',
+		path: "/Publish/:userID",
+		name: "PostToUserPublishPage",
 		component: PostToUserPublishPage,
-	  },
-	  {
-		path: '/Favorites/:userID',
-		name: 'PostToUserFavoritesPage',
+	},
+	{
+		path: "/Favorites/:userID",
+		name: "PostToUserFavoritesPage",
 		component: PostToUserFavoritesPage,
-	  },
+	},
 	{
 		path: "/group-chat",
 		name: "GroupChatStarter",
@@ -89,6 +90,17 @@ const routes = [
 		path: "/update-password",
 		name: "UpdatePassword",
 		component: UpdatePassword,
+	},
+	{
+		path: "/manager",
+		name: "ManagerHome",
+		component: ManagerHome,
+	},
+	{
+		path: "/report-detail/:msgID",
+		name: "ReportDetail",
+		props: true,
+		component: ReportDetail,
 	},
 ];
 
