@@ -29,9 +29,9 @@
 						<!-- 删除和隐藏按钮 -->
 						<div class="post-actions">
 							<button @click.stop="deletePost(post.id)">删除</button>
-							<button @click.stop="toggleHide(post.id)">
+							<!-- <button @click.stop="toggleHide(post.id)">
 								{{ post.hidden ? "显示" : "隐藏" }}
-							</button>
+							</button> -->
 						</div>
 					</li>
 				</ul>
